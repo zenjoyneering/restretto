@@ -1,0 +1,19 @@
+---
+title: dweet.io testing example
+baseUri: http://dweet.io/
+headers:
+    Accept: application/json
+
+actions:
+
+    - post: /dweet/for/sample_weird_thing
+      headers:
+        Content-Type: application/json
+      json: {"message": "Hello from yml"}
+
+    - title: Get latest dweets
+      get: /get/latest/dweet/for/sample_weird_thing
+
+    - title: Get all available dweets
+      url: /get/dweets/for/sample_weird_thing
+      method: get
