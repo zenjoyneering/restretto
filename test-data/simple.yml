@@ -1,0 +1,19 @@
+---
+title: Simple test file
+baseUri: http://httpbin.org
+actions:
+
+    - url: /get
+
+    - get: /get
+
+    - url: /get
+      method: get
+
+    - delete: /delete
+
+    - get: /status/404
+      title: This should fail
+
+    - put: /status/500
+      title: This should fail too

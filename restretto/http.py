@@ -8,7 +8,7 @@ from urllib.request import urljoin
 class Session(object):
     """REST session"""
 
-    def __init__(self, headers={}, baseUri=''):
+    def __init__(self, headers={}, baseUri='', **kwargs):
         self.session = requests.Session()
         # set common headers
         self.session.headers.update(headers)
