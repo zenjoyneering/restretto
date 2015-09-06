@@ -1,0 +1,107 @@
+---
+title: Demonstration of restretto features
+# baseUri can be tepmlated using vars (see below), or can be empty
+baseUri: http://{service}/
+
+# variables persists during session and available for all requests in file
+# vars can be overrided using command line option
+vars:
+    service: httpbin.org
+
+# common headers for all requests
+headers:
+    Accept: application/json
+
+# actions or requests, think of them as a test cases
+# 'actions' and 'requests' are interchangeable but only one form in file allowed
+actions:
+
+    # each url are joined with baseUri if it exists
+
+    # simpest get request fails if response is not any of 2xx
+    - url: /get
+
+    - get: /get
+      title: Verbose action
+
+    - title:  More verbose action
+      url: /get
+      method: get
+
+    - title: Posting json data
+      post: /post
+      json: {"key": "value"}
+
+    - title: Put raw data with headers
+      put: /put
+      headers:
+          Content-Type: text/plain
+      body: "Hello, httpbin"
+
+    - title: This should fail
+      get: /status/404
+
+    - title: This should fail too
+      put: /status/500
+
+    # excepts (or asserts, can be used interchangeable)
+    - title: Expect for specific status
+      get: /status/500
+      expect:
+          - status: 500
+
+    - title: Expect for status range
+      get: /status/404
+      assert:
+          - status: 4xx
+
+    - title: Expect headers
+      get: /response-headers?X-Custom-Header=value&X-Sample=other
+      expect:
+          # True if header exists
+          - header: X-Custom-Header
+          # True if has expected value
+          - header: X-Custom-Header
+            is: value
+          # True if header not equal to value
+          - header: X-Custom-Header
+            is_not: other
+          # True if header's value contain substring
+          - headers: X-Sample
+            contains: the
+
+    # in each action theese vars available: json, status, text
+    - title: Expect body value as text
+      vars:
+          payload: "sample data"
+      post: /post
+      headers:
+          Content-Type: text/plain
+      body: "{payload}"
+      expect:
+          # treat response body as text
+          # check if body not empty
+          - body: text
+          # check if body is equal to expected value from vars
+          - body: text
+            is: "{payload}"
+          # same tests as for headers
+          - body: text
+            contains: "data"
+
+    - title: Expect json matching pattern
+      post: /post
+      # content-type header will be set automatically if not provided
+      json: {"key": "one", "nested": {"key": [1, 2, 3], "other": "two"}}
+      vars:
+          allowed: ["one", "two"]
+          # extracting value from response json makes its available
+          # in subsequent requests
+          inner_key: "{json.nested.other}"
+      expect:
+          # treat body as a json, check if not empty or false
+          - body: json
+          # match pattern
+          - body: json
+            contains: {"key": "one", "nested": {"other": "two"}}
+
