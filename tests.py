@@ -25,7 +25,7 @@ class LoaderExpansionsTestCase(unittest.TestCase):
         spec = {'url': '/url', 'method': 'delete'}
         expanded = restretto.loader.expand_action(spec)
         expected = spec
-        self.assertEqual(spec, expanded)
+        self.assertEqual(expected, expanded)
 
     def test_empty_action(self):
         spec = {'headers': {}, 'body': ''}
@@ -54,6 +54,55 @@ class LoaderExpansionsTestCase(unittest.TestCase):
         requests = restretto.loader.get_actions(alt_spec)
         self.assertEqual(len(actions), 1)
         self.assertEqual(actions, requests)
+
+
+class TemplatingTestCase(unittest.TestCase):
+
+    VARS = {
+        'server': 'httpbin.org',
+        'scheme': 'http',
+        'extra': {
+            'header': 'X-Custom',
+            'value': 'custom-value',
+            'payload_data': 'hello from vars'
+        }
+    }
+
+    def test_template_baseUri(self):
+        spec = {
+            'title': 'Sample',
+            'vars': dict(self.VARS),
+            'baseUri': '{{scheme}}://{{server}}/base'
+        }
+        templated = restretto.templating.format_session(spec)
+        self.assertEqual(templated['baseUri'], 'http://httpbin.org/base')
+
+    def test_template_url(self):
+        spec = {'url': '/headers?{{extra.header}}={{extra.value}}'}
+        templated = restretto.templating.format_action(spec, dict(self.VARS))
+        self.assertEqual(templated['url'], '/headers?X-Custom=custom-value')
+
+    def test_template_headers(self):
+        spec = {
+            "url": "/get",
+            "vars": {
+                "accept": "application/json"
+            },
+            "headers": {
+                "Content-Type": "{{accept}}"
+            }
+        }
+        templated = restretto.templating.format_action(spec, self.VARS)
+        self.assertEqual(templated['headers']['Content-Type'], 'application/json')
+
+    def test_template_body(self):
+        spec = {
+            "url": "/post",
+            "method": "post",
+            "body": '{"some_key": "{{extra.payload_data}}"}'
+        }
+        templated = restretto.templating.format_action(spec, self.VARS)
+        self.assertEqual(templated['body'], '{"some_key": "hello from vars"}')
 
 
 class LoaderiFileLoadTestCase(unittest.TestCase):
@@ -91,7 +140,7 @@ class LoaderDirLoadTestCase(unittest.TestCase):
 
     def test_load_from_dir(self):
         data = restretto.loader.load("test-data/")
-        self.assertEqual(len(data), 2)
+        self.assertEqual(len(data), 3)
 
     def test_load_from_unexistant_dir(self):
         with self.assertRaises(FileNotFoundError):
@@ -100,6 +149,7 @@ class LoaderDirLoadTestCase(unittest.TestCase):
     def test_load_from_bad_dir(self):
         with self.assertRaises(Exception):
             restretto.loader.load("test-data/broken")
+
 
 
 if __name__ == "__main__":

@@ -6,4 +6,4 @@
 """
 
 from . import loader
-
+from . import templating

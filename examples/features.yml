@@ -101,7 +101,10 @@ actions:
       expect:
           # treat body as a json, check if not empty or false
           - body: json
+          # compare selected property by json-path expression
+          - body: json
+            property: nested.key.1
+            is: 2
           # match pattern
           - body: json
             contains: {"key": "one", "nested": {"other": "two"}}
-

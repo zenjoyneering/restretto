@@ -1,0 +1,29 @@
+---
+title: Basic templating
+vars:
+    server: httpbin.org
+    scheme: http
+    extra:
+        header: "X-Custom"
+        value: "custom-value"
+        payload_data: "hello from vars"
+
+
+baseUrl: "{{scheme}}://{server}"
+requests:
+
+    - title: Url templating
+      url: /headers?{{extra.header}}={extra.value}
+
+    - title: Header templating with locally defined var
+      get: /get
+      vars:
+          accept: "application/json"
+      headers:
+          Accept: "{{accept}}"
+
+    - title: Body templating
+      post: /post
+      headers:
+          Content-Type: "application/json"
+      body: '{"some_key": "{{extra.payload_data}}"}'
