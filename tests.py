@@ -100,7 +100,7 @@ class LoaderExpansionsTestCase(unittest.TestCase):
         self.assertEqual(expanded, expected)
 
 
-class AssertionsTestCase(unittest.TestCase):
+class AssertsTestCase(unittest.TestCase):
 
     class Response(object):
 
@@ -112,18 +112,19 @@ class AssertionsTestCase(unittest.TestCase):
             self.ok = status_code in range(200, 299)
 
     def test_response_ok(self):
-        assertion = restretto.assertions.ResponseIsOk()
+        assertion = restretto.assertions.Assert()
         resp = self.Response(200)
         self.assertTrue(assertion.test(resp))
 
     def test_response_not_ok(self):
-        assertion = restretto.assertions.ResponseIsOk()
+        assertion = restretto.assertions.Assert()
         resp = self.Response(404)
         with self.assertRaises(AssertionError):
             assertion.test(resp)
 
     def test_status(self):
-        assertion = restretto.assertions.StatusAsExpected('500')
+        spec = [{'status': '500'}]
+        assertion = restretto.assertions.Assert(spec)
         resp = self.Response(500)
         self.assertTrue(assertion.test(resp))
         resp = self.Response(501)
@@ -131,7 +132,8 @@ class AssertionsTestCase(unittest.TestCase):
             assertion.test(resp)
 
     def test_status_match(self):
-        assertion = restretto.assertions.StatusAsExpected('4xx')
+        spec = [{'status': '4xx'}]
+        assertion = restretto.assertions.Assert(spec)
         resp = self.Response(403)
         self.assertTrue(assertion.test(resp))
         resp = self.Response(501)
@@ -139,7 +141,8 @@ class AssertionsTestCase(unittest.TestCase):
             assertion.test(resp)
 
     def test_status_in(self):
-        assertion = restretto.assertions.StatusAsExpected(['401'])
+        spec = [{'status': ['401']}]
+        assertion = restretto.assertions.Assert(spec)
         resp = self.Response(401)
         self.assertTrue(assertion.test(resp))
         resp = self.Response(404)
@@ -147,7 +150,8 @@ class AssertionsTestCase(unittest.TestCase):
             assertion.test(resp)
 
     def test_header_exists(self):
-        assertion = restretto.assertions.HeaderAsExpected('Content-Type')
+        spec = [{'header': 'Content-Type'}]
+        assertion = restretto.assertions.Assert(spec)
         resp = self.Response(200, headers={'Content-Type': 'text/plain'})
         self.assertTrue(assertion.test(resp))
         resp = self.Response(404, headers={'x-bar': 'y-foo'})
@@ -155,8 +159,8 @@ class AssertionsTestCase(unittest.TestCase):
             assertion.test(resp)
 
     def test_header_is(self):
-        conditions = {'is': 'text/html'}
-        assertion = restretto.assertions.HeaderAsExpected('Content-Type', conditions)
+        spec = [{'header': 'Content-Type', 'is': 'text/html'}]
+        assertion = restretto.assertions.Assert(spec)
         resp = self.Response(200, headers={'Content-Type': 'text/html'})
         self.assertTrue(assertion.test(resp))
         resp = self.Response(200, headers={'Content-Type': 'text/plain'})
@@ -164,8 +168,8 @@ class AssertionsTestCase(unittest.TestCase):
             assertion.test(resp)
 
     def test_header_contains(self):
-        conditions = {'contains': 'xml'}
-        assertion = restretto.assertions.HeaderAsExpected('Content-Type', conditions)
+        spec = [{'header': 'Content-Type', 'contains': 'xml'}]
+        assertion = restretto.assertions.Assert(spec)
         resp = self.Response(200, headers={'Content-Type': 'application/xml+xhtml'})
         self.assertTrue(assertion.test(resp))
         resp = self.Response(200, headers={'Content-Type': 'text/html'})
@@ -173,7 +177,8 @@ class AssertionsTestCase(unittest.TestCase):
             assertion.test(resp)
 
     def test_body_text(self):
-        assertion = restretto.assertions.BodyAsExpected('text')
+        spec = [{'body': 'text'}]
+        assertion = restretto.assertions.Assert(spec)
         resp = self.Response(200, text='Sample')
         self.assertTrue(assertion.test(resp))
         resp = self.Response(200, text=None)
@@ -181,8 +186,8 @@ class AssertionsTestCase(unittest.TestCase):
             assertion.test(resp)
 
     def test_body_text_is(self):
-        conditions = {'is': 'sample'}
-        assertion = restretto.assertions.BodyAsExpected('text', conditions)
+        spec = [{'body': 'text', 'is': 'sample'}]
+        assertion = restretto.assertions.Assert(spec)
         resp = self.Response(200, text='sample')
         self.assertTrue(assertion.test(resp))
         resp = self.Response(200, text='other')
@@ -190,13 +195,14 @@ class AssertionsTestCase(unittest.TestCase):
             assertion.test(resp)
 
     def test_body_text_contains(self):
-        conditions = {'contains': 'llo wo'}
-        assertion = restretto.assertions.BodyAsExpected('text', conditions)
+        spec = [{'body': 'text', 'contains': 'llo wo'}]
+        assertion = restretto.assertions.Assert(spec)
         resp = self.Response(200, text='hello world')
         self.assertTrue(assertion.test(resp))
         resp = self.Response(200, text='ehlo world')
         with self.assertRaises(AssertionError):
             assertion.test(resp)
+
 
 class TemplatingTestCase(unittest.TestCase):
 
@@ -244,7 +250,7 @@ class TemplatingTestCase(unittest.TestCase):
         self.assertEqual(templated['data'], '{"some_key": "hello from vars"}')
 
 
-class LoaderiFileLoadTestCase(unittest.TestCase):
+class LoaderFileLoadTestCase(unittest.TestCase):
 
     def test_load_unexisting_file(self):
         with self.assertRaises(FileNotFoundError):

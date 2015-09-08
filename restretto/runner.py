@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
 import requests
 from urllib.request import urljoin
 from . import templating
+from . import assertions
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 class Result(object):
@@ -28,18 +33,21 @@ class Runner(object):
         self.spec = templating.apply_session_context(spec, self.context)
         # setup session
         self.session = requests.Session()
-        self.session.headers.update(self.spec.get('header'))
+        self.session.headers.update(self.spec.get('headers', {}))
+        self.baseUri = spec.get('baseUri', '')
         # prepare result
         self.result = Result(self.spec.get('title', ''))
 
     def execute(self):
         # for each request
+        logger.info("Running {} test session".format(self.spec.get('title', '')))
         for action in self.spec['actions']:
             title = action.pop('title') if 'title' in action else action['url']
+            logger.info('Requesting {}'.format(title))
             # apply context for request
             spec = templating.apply_action_context(action, self.context)
             # create assertions
-            assertion = Assertion(spec.pop('assert') if 'assert' in spec else [])
+            assertion = assertions.Assert(spec.pop('assert') if 'assert' in spec else [])
             # get response
             response = self.request(**spec)
             # test assertion
@@ -49,31 +57,11 @@ class Runner(object):
             # store result
             except:
                 self.result.failures.append(response)
+            # TODO: store vars in context
         return self.result
 
     def request(self, **spec):
+        spec['url'] = urljoin(self.baseUri, spec['url'])
         request = requests.Request(**spec)
         prepared = request.prepare()
         return self.session.send(prepared)
-
-
-
-def execute(spec):
-    actions = spec.pop('actions')
-    result = Result(spec.pop('title'))
-    session = http.Session(**spec)
-    print("Running {}".format(result.title))
-    for request in actions:
-        title = request.pop('title') if 'title' in request else request['url']
-        response = session.action(**request)
-        status = "SUCCEED" if response.ok else "FAILED"
-        print("{}: {}".format(title, status))
-        if not response.ok:
-            print("{method} {url}: {status} {reason}".format(
-                status=response.status_code, reason=response.reason,
-                **request)
-            )
-            result.failures.append(response)
-        else:
-            result.succeed.append(response)
-    return result

@@ -5,15 +5,6 @@
 from fnmatch import fnmatch
 
 
-class AssertionFailed(AssertionError):
-
-    def __init__(self, message):
-        self.message = message
-
-    def __str__(self):
-        return self.message
-
-
 class Statement(object):
 
     def test(self, response):
@@ -23,8 +14,7 @@ class Statement(object):
 class ResponseIsOk(Statement):
 
     def test(self, response):
-        if not response.ok:
-            raise AssertionFailed("Request failed: {}".format(response.status_code))
+        assert response.ok
         return True
 
 
@@ -89,15 +79,28 @@ class BodyAsExpected(ResponseItemInspector):
             return None
 
 
-class JSONAsExpected(Statement):
-    pass
-
-
-class Assertion(object):
+class Assert(object):
 
     def __init__(self, statements=[]):
-        self.statements = statements or [ResponseIsOk]
+        self.statements = []
+        if not statements:
+            # assume default simple check
+            self.statements = [ResponseIsOk()]
+        else:
+            for spec in statements:
+                self.statements.append(self.statement(spec))
 
     def test(self, response):
         for stmt in self.statements:
             stmt.test(response)
+        return True
+
+    def statement(self, spec):
+        """Statement factory"""
+        spec = dict(spec)
+        if 'status' in spec:
+            return StatusAsExpected(spec['status'])
+        if 'header' in spec:
+            return HeaderAsExpected(spec.pop('header'), spec)
+        if 'body' in spec:
+            return BodyAsExpected(spec.pop('body'), spec)
