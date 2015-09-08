@@ -50,6 +50,13 @@ def expand_action(spec):
     spec['method'] = spec['method'].lower()
     if spec['method'] not in HTTP_METHODS:
         raise ParseError('Unknown http method verb: {}'.format(spec['method']))
+    # only one form of assertions should be used at a time
+    if 'expect' in  spec and 'assert' in spec:
+        raise ParseError("Only one form should be used")
+    # convert assertions to canonical form
+    # expect -> assert, expect looks very similar to except
+    if 'expect' in spec:
+        spec['assert'] = spec.pop('expect')
     return spec
 
 

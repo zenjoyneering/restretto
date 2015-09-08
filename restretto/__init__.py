@@ -7,3 +7,4 @@
 
 from . import loader
 from . import templating
+from . import assertions

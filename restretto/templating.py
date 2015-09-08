@@ -5,25 +5,27 @@
 from jinja2 import Template
 
 
-def format_session(spec, context={}):
+def apply_session_context(spec, context={}):
     """Format session template with values from vars section"""
-    values = spec.pop('vars') if 'vars' in spec else {}
-    values.update(context)
     for key, val in spec.items():
-        spec[key] = Template(val).render(values)
+        if isinstance(val, str):
+            spec[key] = Template(val).render(context)
     return spec
 
 
-def format_action(spec, context={}):
+def apply_action_context(spec, context={}):
     """Format templated fields in actions (after expansion)"""
-    values = spec.pop('vars') if 'vars' in spec else {}
-    values.update(context)
     # format url
-    spec['url'] = Template(spec['url']).render(values)
+    spec['url'] = Template(spec['url']).render(context)
     # format headers
     for header, val in spec.get('headers', {}).items():
-        spec['headers'][header] = Template(val).render(values)
+        spec['headers'][header] = Template(val).render(context)
     # format body
-    if 'body' in spec and spec['body']:
-        spec['body'] = Template(spec['body']).render(values)
+    if 'data' in spec and spec['data']:
+        if isinstance(spec['data'], str):
+            spec['data'] = Template(spec['data']).render(context)
+        else:
+            # TODO: recursively update data dict
+            pass
+    # TODO:  update json
     return spec
