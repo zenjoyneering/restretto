@@ -8,7 +8,7 @@ from . import templating
 from . import assertions
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 
 class Result(object):
@@ -41,6 +41,7 @@ class Runner(object):
     def execute(self):
         # for each request
         logger.info("Running {} test session".format(self.spec.get('title', '')))
+        logger.debug("Session baseUri: {}".format(self.baseUri))
         for action in self.spec['actions']:
             title = action.pop('title') if 'title' in action else action['url']
             logger.info('Requesting {}'.format(title))
