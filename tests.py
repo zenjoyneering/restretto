@@ -214,41 +214,41 @@ class TemplatingTestCase(unittest.TestCase):
             'value': 'custom-value',
             'payload_data': 'hello from vars'
         },
+        'val': 100,
         'accept': 'application/json'
     }
 
-    def test_template_baseUri(self):
-        spec = {
-            'title': 'Sample',
-            'baseUri': '{{scheme}}://{{server}}/base'
-        }
-        templated = restretto.templating.apply_session_context(spec, dict(self.VARS))
-        self.assertEqual(templated['baseUri'], 'http://httpbin.org/base')
-
-    def test_template_url(self):
-        spec = {'url': '/headers?{{extra.header}}={{extra.value}}'}
-        templated = restretto.templating.apply_action_context(spec, dict(self.VARS))
-        self.assertEqual(templated['url'], '/headers?X-Custom=custom-value')
-
-    def test_template_headers(self):
-        spec = {
-            "url": "/get",
-            "headers": {
-                "Content-Type": "{{accept}}"
+    def test_template_complex(self):
+        src = {
+            'url': '{{scheme}}://{{server}}/base',
+            'headers': {
+                'Accept': '{{accept}}'
+            },
+            'expect': [
+                {'header': '{{extra.header}}', 'is': '{{extra.value}}'},
+                {'body': 'text', 'is': '{{extra.payload_data}}'}
+            ],
+            'json': {
+                'option': 12,
+                'content': ['{{val}}']
             }
         }
-        templated = restretto.templating.apply_action_context(spec, self.VARS)
-        self.assertEqual(templated['headers']['Content-Type'], 'application/json')
-
-    def test_template_body(self):
-        spec = {
-            "url": "/post",
-            "method": "post",
-            "data": '{"some_key": "{{extra.payload_data}}"}'
+        result = restretto.templating.apply_context(src, self.VARS)
+        expected = {
+            'url': 'http://httpbin.org/base',
+            'headers': {
+                'Accept': 'application/json'
+            },
+            'expect': [
+                {'header': 'X-Custom', 'is': 'custom-value'},
+                {'body': 'text', 'is': 'hello from vars'}
+            ],
+            'json': {
+                'option': 12,
+                'content': ['100']
+            }
         }
-        templated = restretto.templating.apply_action_context(spec, self.VARS)
-        self.assertEqual(templated['data'], '{"some_key": "hello from vars"}')
-
+        self.assertEqual(result, expected)
 
 class LoaderFileLoadTestCase(unittest.TestCase):
 
