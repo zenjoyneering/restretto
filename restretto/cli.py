@@ -7,39 +7,38 @@
 
 
 import sys
-from jinja2 import Template
+import argparse
 from . import runner
 from . import loader
 
-REPORT = Template("""
-{% for report in failures %}
-{{ report.title }}
-    {% for response in report.failures %}
-    {{ response.url }}: failed with {{response.status_code}}
-    {% endfor %}
 
-{% endfor %}
-""")
+parser = argparse.ArgumentParser(description="REST resources/endpoints testing tool")
+parser.add_argument("path", help="path to look for tests (file or directory)")
+parser.add_argument("--xunit", dest="xunit_dir", default=None,
+                    help="output xunit reports to this dir")
+parser.add_argument("-q", "--quiet", action="store_true")
 
 
 def main(args=sys.argv[1:]):
-    if not args:
-        print("Usage: {} path_to_yaml_or_dir".format(sys.argv[0]))
-        sys.exit(1)
-    print("Loading: {}".format(sys.argv[1]))
-    sources = loader.load(sys.argv[1])
+    arguments = parser.parse_args(args)
+
+    sources = loader.load(arguments.path)
     if not sources:
         print("No test sessions found, exiting")
         sys.exit(1)
-    failures = []
+
     for spec in sources:
-        result = runner.Runner(spec).execute()
-        if not result.ok:
-            failures.append(result)
-    print(REPORT.render(failures=failures))
-    if not failures:
-        print("{} sessions passed")
-        sys.exit(0)
-    else:
-        print("{} sessions of {} failed".format(len(failures), len(sources)))
-        sys.exit(2)
+        test_session = runner.Runner(spec)
+        hdr = "Test session: {}".format(spec.get('title', test_session.baseUri))
+        print(hdr)
+        print('-' * len(hdr))
+        for action in test_session.actions:
+            title = action.pop('title') if 'title' in action else action['url']
+            (response, error) = test_session.execute(action)
+            if error:
+                print("{}: failed".format(title))
+                print("    {}".format(str(error)))
+            else:
+                print("{}: passed".format(title))
+        print("")
+        print("")
