@@ -9,6 +9,7 @@
 import sys
 import argparse
 from . import load
+from .errors import ExpectError
 
 
 parser = argparse.ArgumentParser(description="REST resources/endpoints testing tool")
@@ -33,7 +34,9 @@ def main(args=sys.argv[1:]):
         for action in test_session.actions:
             try:
                 test_session.run(action)
+            except ExpectError as failure:
+                print("[FAILURE] {}: {}".format(action.title, failure))
             except Exception as error:
-                print("{}: {}".format(action.title, error))
+                print("[ERROR] {}: {}".format(action.title, error))
         print("")
         print("")

@@ -116,6 +116,10 @@ class AssertsTestCase(unittest.TestCase):
             self.text = text
             self.json = json
             self.ok = status_code in range(200, 299)
+            self.reason = 'reason'
+
+        def __bool__(self):
+            return self.ok
 
     def test_response_ok(self):
         assertion = restretto.assertions.Assert()
@@ -125,7 +129,7 @@ class AssertsTestCase(unittest.TestCase):
     def test_response_not_ok(self):
         assertion = restretto.assertions.Assert()
         resp = self.Response(404)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(restretto.errors.ExpectError):
             assertion.test(resp)
 
     def test_status(self):
@@ -134,7 +138,7 @@ class AssertsTestCase(unittest.TestCase):
         resp = self.Response(500)
         self.assertTrue(assertion.test(resp))
         resp = self.Response(501)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(restretto.errors.ExpectError):
             assertion.test(resp)
 
     def test_status_match(self):
@@ -143,7 +147,7 @@ class AssertsTestCase(unittest.TestCase):
         resp = self.Response(403)
         self.assertTrue(assertion.test(resp))
         resp = self.Response(501)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(restretto.errors.ExpectError):
             assertion.test(resp)
 
     def test_status_in(self):
@@ -152,7 +156,7 @@ class AssertsTestCase(unittest.TestCase):
         resp = self.Response(401)
         self.assertTrue(assertion.test(resp))
         resp = self.Response(404)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(restretto.errors.ExpectError):
             assertion.test(resp)
 
     def test_header_exists(self):
@@ -161,7 +165,7 @@ class AssertsTestCase(unittest.TestCase):
         resp = self.Response(200, headers={'Content-Type': 'text/plain'})
         self.assertTrue(assertion.test(resp))
         resp = self.Response(404, headers={'x-bar': 'y-foo'})
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(restretto.errors.ExpectError):
             assertion.test(resp)
 
     def test_header_is(self):
@@ -170,7 +174,7 @@ class AssertsTestCase(unittest.TestCase):
         resp = self.Response(200, headers={'Content-Type': 'text/html'})
         self.assertTrue(assertion.test(resp))
         resp = self.Response(200, headers={'Content-Type': 'text/plain'})
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(restretto.errors.ExpectError):
             assertion.test(resp)
 
     def test_header_contains(self):
@@ -179,7 +183,7 @@ class AssertsTestCase(unittest.TestCase):
         resp = self.Response(200, headers={'Content-Type': 'application/xml+xhtml'})
         self.assertTrue(assertion.test(resp))
         resp = self.Response(200, headers={'Content-Type': 'text/html'})
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(restretto.errors.ExpectError):
             assertion.test(resp)
 
     def test_body_text(self):
@@ -188,7 +192,7 @@ class AssertsTestCase(unittest.TestCase):
         resp = self.Response(200, text='Sample')
         self.assertTrue(assertion.test(resp))
         resp = self.Response(200, text=None)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(restretto.errors.ExpectError):
             assertion.test(resp)
 
     def test_body_text_is(self):
@@ -197,7 +201,7 @@ class AssertsTestCase(unittest.TestCase):
         resp = self.Response(200, text='sample')
         self.assertTrue(assertion.test(resp))
         resp = self.Response(200, text='other')
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(restretto.errors.ExpectError):
             assertion.test(resp)
 
     def test_body_text_contains(self):
@@ -206,7 +210,7 @@ class AssertsTestCase(unittest.TestCase):
         resp = self.Response(200, text='hello world')
         self.assertTrue(assertion.test(resp))
         resp = self.Response(200, text='ehlo world')
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(restretto.errors.ExpectError):
             assertion.test(resp)
 
 

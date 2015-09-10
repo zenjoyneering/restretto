@@ -3,80 +3,82 @@
 
 
 from fnmatch import fnmatch
+from .errors import ExpectError
 
 
-class Statement(object):
+class ResponseTest(object):
+
+    message = "Bad response ({0} {1})"
+
+    def expect(self, statement, message=''):
+        if not statement:
+            raise ExpectError(message)
 
     def test(self, response):
-        raise NotImplementedError()
+        self.expect(response, self.message.format(response.status_code, response.reason))
+
+    def assert_is(self, item, value):
+        self.expect(item == value, "{} != {}".format(item, value))
+
+    def assert_is_not(self, item, value):
+        self.expect(item != value, "{} == {}".format(item, value))
+
+    def assert_contains(self, item, value):
+        self.expect(value in item, "{} not found in {}".format(value, item))
+
+    def assert_statements(self, statements, item):
+        # assert all conditions are satisfied
+        for (cond, value) in statements.items():
+            assert_fn = 'assert_{}'.format(cond)
+            getattr(self, assert_fn)(item, value)
 
 
-class ResponseIsOk(Statement):
+class StatusCodeTest(ResponseTest):
 
-    def test(self, response):
-        assert response.ok
-        return True
-
-
-class StatusAsExpected(Statement):
+    message = "Unexpected status ({0} instead of {1})"
 
     def __init__(self, status):
         self.expected = status
 
     def test(self, response):
         if isinstance(self.expected, str):
-            assert fnmatch(str(response.status_code), self.expected.replace('x', '?'))
+            self.expect(
+                fnmatch(str(response.status_code), self.expected.replace('x', '?')),
+                self.message.format(response.status_code, self.expected)
+            )
         else:
             # treat as list of possible statuses
-            assert str(response.status_code) in self.expected
-        return True
+            self.expect(
+                str(response.status_code) in self.expected,
+                self.message.format(response.status_code, self.expected)
+            )
 
 
-class ResponseItemInspector(Statement):
+class ResponsePropertyTest(ResponseTest):
 
-    def __init__(self, name, conditions={}):
+    def __init__(self, name, statements={}):
         self.name = name
-        self.conditions = conditions
+        self.statements = statements
 
-    def _get_testing_item(self, response):
-        # should be overrided
-        return None
+
+class HeaderTest(ResponsePropertyTest):
 
     def test(self, response):
-        # at least testing item should exists
-        item = self._get_testing_item(response)
-        assert item
-        # assert all conditions are satisfied
-        for (cond, value) in self.conditions.items():
-            test_fn = 'test_{}'.format(cond)
-            getattr(self, test_fn)(item, value)
-        return True
-
-    def test_is(self, item, value):
-        assert item == value
-
-    def test_is_not(self, item, value):
-        assert item != value
-
-    def test_contains(self, item, value):
-        assert value in item
+        header = response.headers.get(self.name, None)
+        self.expect(header, "Header not found: {}".format(self.name))
+        self.assert_statements(self.statements, header)
 
 
-class HeaderAsExpected(ResponseItemInspector):
+class BodyTest(ResponsePropertyTest):
 
-    def _get_testing_item(self, response):
-        return response.headers.get(self.name, None)
-
-
-class BodyAsExpected(ResponseItemInspector):
-
-    def _get_testing_item(self, response):
+    def test(self, response):
+        data = None
         if self.name == 'text':
-            return response.text
+            data = response.text
         elif self.name == 'json':
-            return response.json()
-        else:
-            return None
+            data = response.json()
+        self.expect(data, "Content not found or empty: {}".format(self.name))
+        self.assert_statements(self.statements, data)
 
 
 class Assert(object):
@@ -85,7 +87,7 @@ class Assert(object):
         self.statements = []
         if not statements:
             # assume default simple check
-            self.statements = [ResponseIsOk()]
+            self.statements = [ResponseTest()]
         else:
             for spec in statements:
                 self.statements.append(self.statement(spec))
@@ -99,8 +101,8 @@ class Assert(object):
         """Statement factory"""
         spec = dict(spec)
         if 'status' in spec:
-            return StatusAsExpected(spec['status'])
+            return StatusCodeTest(spec['status'])
         if 'header' in spec:
-            return HeaderAsExpected(spec.pop('header'), spec)
+            return HeaderTest(spec.pop('header'), spec)
         if 'body' in spec:
-            return BodyAsExpected(spec.pop('body'), spec)
+            return BodyTest(spec.pop('body'), spec)
