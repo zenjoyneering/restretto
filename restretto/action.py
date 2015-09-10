@@ -5,10 +5,10 @@
 """
 
 from urllib.request import urljoin
+from .errors import ParseError
 
 
-class ParseError(Exception):
-    pass
+HTTP_METHODS = frozenset(('get', 'options', 'head', 'post', 'put', 'patch', 'delete'))
 
 
 class RESTAction(object):
@@ -41,12 +41,11 @@ class RESTAction(object):
         # validate fields
         if not request['url'] or not request['method']:
             raise ParseError('Url or method for action not specified')
-        request['method'] = spec['method'].lower()
+        request['method'] = request['method'].lower()
         if request['method'] not in HTTP_METHODS:
             raise ParseError('Unknown http method verb: {}'.format(spec['method']))
-        if 'expect' in  spec and 'assert' in spec:
-            raise ParseError("Only one form should be used")
-        return request
+        # clean empty fields
+        return {k: v for k, v in request.items() if v is not None}
 
     def __init__(self, spec):
         """Create action from specification"""
@@ -58,7 +57,7 @@ class RESTAction(object):
         if 'expect' in spec and 'assert' in spec:
             # only one form of assertions should be used at a time
             raise ParseError("Only expect or assert keyword can be used")
-        self.assertion = self.spec.get('assert', self.spec.get('expect', {}))
+        self.asserts = self.spec.get('assert', self.spec.get('expect'))
 
         self.request = self.expand_request(spec)
         # response and errors are not known

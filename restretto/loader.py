@@ -11,7 +11,6 @@ import os
 
 SUPPORTED_EXTENSIONS = (".yml", ".yaml")
 
-HTTP_METHODS = frozenset(('get', 'options', 'head', 'post', 'put', 'patch', 'delete'))
 
 
 class ParseError(Exception):

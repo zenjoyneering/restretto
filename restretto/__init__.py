@@ -8,4 +8,5 @@
 from . import loader
 from . import templating
 from . import assertions
-from .core import Action
+from . import errors
+from .action import RESTAction

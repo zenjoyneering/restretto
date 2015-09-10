@@ -8,40 +8,40 @@ import unittest
 import restretto
 
 
-class LoaderExpansionsTestCase(unittest.TestCase):
+class RESTActionTestCase(unittest.TestCase):
 
     def test_expand_action_method(self):
         spec = {'url': '/some/url', 'headers': {}}
-        expanded = restretto.loader.expand_action(spec)
+        action = restretto.RESTAction(spec)
         expected = {'method': 'get', 'url': '/some/url', 'headers': {}}
-        self.assertEqual(expanded, expected)
+        self.assertEqual(action.request, expected)
 
     def test_expand_action_url(self):
         spec = {'put': '/url', 'json': [1, 2]}
-        expanded = restretto.loader.expand_action(spec)
+        expanded = restretto.RESTAction(spec)
         expected = {'method': 'put', 'url': '/url', 'json': [1, 2]}
-        self.assertEqual(expanded, expected)
+        self.assertEqual(expanded.request, expected)
 
     def test_expanded_action(self):
         spec = {'url': '/url', 'method': 'delete'}
-        expanded = restretto.loader.expand_action(spec)
+        expanded = restretto.RESTAction(spec)
         expected = spec
-        self.assertEqual(expected, expanded)
+        self.assertEqual(expected, expanded.request)
 
     def test_empty_action(self):
         spec = {'headers': {}, 'body': ''}
-        with self.assertRaises(restretto.loader.ParseError):
-            restretto.loader.expand_action(spec)
+        with self.assertRaises(restretto.errors.ParseError):
+            restretto.RESTAction(spec)
 
     def test_missing_url(self):
         spec = {'method': 'options'}
-        with self.assertRaises(restretto.loader.ParseError):
-            restretto.loader.expand_action(spec)
+        with self.assertRaises(restretto.errors.ParseError):
+            restretto.RESTAction(spec)
 
     def test_invalid_method(self):
         spec = {'url': '/url', 'method': 'bad_method'}
-        with self.assertRaises(restretto.loader.ParseError):
-            restretto.loader.expand_action(spec)
+        with self.assertRaises(restretto.errors.ParseError):
+            restretto.RESTAction(spec)
 
     def test_get_actions_requests(self):
         spec = {'actions': [], 'requests': []}
@@ -54,8 +54,8 @@ class LoaderExpansionsTestCase(unittest.TestCase):
             'expect': [{'status': '4xx'}],
             'assert': [{'header': 'Content-Type'}]
         }
-        with self.assertRaises(restretto.loader.ParseError):
-            restretto.loader.expand_action(spec)
+        with self.assertRaises(restretto.errors.ParseError):
+            restretto.RESTAction(spec)
 
     def test_get_actions(self):
         spec = {'actions': [{'url': '/sample'}]}
@@ -72,15 +72,16 @@ class LoaderExpansionsTestCase(unittest.TestCase):
                 {'status': '200'}
             ]
         }
-        expanded = restretto.loader.expand_action(spec)
-        expected = {
+        action = restretto.RESTAction(spec)
+        expected_request = {
             'url': '/url',
             'method': 'get',
-            'assert': [
-                {'status': '200'}
-            ]
         }
-        self.assertEqual(expanded, expected)
+        expected_asserts = [
+            {'status': '200'}
+        ]
+        self.assertEqual(action.request, expected_request)
+        self.assertEqual(action.asserts, expected_asserts)
 
     def test_get_expect(self):
         spec = {
@@ -89,15 +90,16 @@ class LoaderExpansionsTestCase(unittest.TestCase):
                 {'status': '500'}
             ]
         }
-        expanded = restretto.loader.expand_action(spec)
-        expected = {
+        action = restretto.RESTAction(spec)
+        expected_request = {
             'url': '/url',
             'method': 'get',
-            'assert': [
-                {'status': '500'}
-            ]
         }
-        self.assertEqual(expanded, expected)
+        expected_asserts = [
+            {'status': '500'}
+        ]
+        self.assertEqual(action.request, expected_request)
+        self.assertEqual(action.asserts, expected_asserts)
 
 
 class AssertsTestCase(unittest.TestCase):
@@ -249,6 +251,7 @@ class TemplatingTestCase(unittest.TestCase):
             }
         }
         self.assertEqual(result, expected)
+
 
 class LoaderFileLoadTestCase(unittest.TestCase):
 
