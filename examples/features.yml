@@ -49,12 +49,22 @@ actions:
     - title: Expect for specific status
       get: /status/500
       expect:
-          - status: 500
+          - status: "500"
 
     - title: Expect for status range
       get: /status/404
       assert:
           - status: 4xx
+
+    - title: Expect for wrong status pattern (should fail)
+      get: /status/500
+      expect:
+          - status: 4xx
+
+    - title: Expect for wrong status list (should fail)
+      get: /status/401
+      expect:
+          - status: [400, 403]
 
     - title: Expect headers
       get: /response-headers?X-Custom-Header=value&X-Sample=other
@@ -68,11 +78,28 @@ actions:
           - header: X-Custom-Header
             is_not: other
           # True if header's value contain substring
-          - headers: X-Sample
+          - header: X-Sample
             contains: the
 
+    - title: Missing header (should fail)
+      get: /response-headers?X-Custom=test
+      expect:
+          - header: X-Unexist
+
+    - title: Header not match (should fail)
+      get: /response-headers?X-Custom=test
+      expect:
+          - header: X-Custom
+            is: testy
+
+    - title: Header not contains substr (should fail)
+      get: /response-headers?X-Custom=test
+      expect:
+          - header: X-Custom
+            contains: foo
+
     # in each action theese vars available: json, status, text
-    - title: Expect body value as text
+    - title: Test body value as text
       post: /post
       headers:
           Content-Type: text/plain
@@ -81,14 +108,11 @@ actions:
           # treat response body as text
           # check if body not empty
           - body: text
-          # check if body is equal to expected value from vars
-          - body: text
-            is: "{{payload}}"
           # same tests as for headers
           - body: text
             contains: "data"
 
-    - title: Expect json matching pattern
+    - title: Test body value as json
       post: /post
       # content-type header will be set automatically if not provided
       json: {"key": "one", "nested": {"key": [1, 2, 3], "other": "two"}}
@@ -100,9 +124,9 @@ actions:
           # treat body as a json, check if not empty or false
           - body: json
           # compare selected property by json-path expression
+          #- body: json
+          #  property: nested.key.1
+          #  is: 2
+          # check if contains key (httpbin return request info as json)
           - body: json
-            property: nested.key.1
-            is: 2
-          # check if contains key
-          - body: json
-            contains: "nested"
+            contains: "json"

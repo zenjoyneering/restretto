@@ -26,6 +26,7 @@ setup(
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Software Development",
         "Topic :: Software Development :: Quality Assurance",
-        "Topic :: Software Development :: Testing"
+        "Topic :: Software Development :: Testing",
+        "License :: OSI Approved :: Apache Software License"
     ]
 )
