@@ -5,8 +5,8 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 
-from . import loader
-from . import templating
 from . import assertions
 from . import errors
-from .rest import Action
+from . import utils
+from .rest import Action, Session
+from .loader import load

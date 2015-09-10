@@ -4,8 +4,12 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 
+import requests
 from urllib.request import urljoin
+
+from . import assertions
 from .errors import ParseError
+from .utils import apply_context
 
 
 HTTP_METHODS = frozenset(('get', 'options', 'head', 'post', 'put', 'patch', 'delete'))
@@ -66,14 +70,72 @@ class Action(object):
 
     @property
     def title(self):
-        return self.spec.get('title') or self.spec.get('name') or self.request['url']
+        return self.spec.get('title') or self.spec.get('name') \
+            or '{method} {url}'.format(**self.request)
 
     def run(self, baseUri='', context={}, session=None):
         """Run actions' request, perform assertion testing"""
         self.request['url'] = urljoin(baseUri, self.request['url'])
         # apply template to request and assertions
+        self.request = apply_context(self.request, context)
+        self.asserts = apply_context(self.asserts, context)
         # create assertions
+        assertion = assertions.Assert(self.asserts)
         # get response
-        # test assertion
+        request = requests.Request(**self.request).prepare()
+        http = session or requests.Session()
+        self.response = http.send(request)
+        # test assertion, will raise an excep
+        try:
+            assertion.test(self.response)
+        except Exception as error:
+            # save error
+            self.error = error
+            # reraise
+            raise
         # save context vars
         return self
+
+
+class Session(object):
+    """REST session"""
+
+    def __init__(self, spec, context={}):
+        self.spec = spec
+        self.context = spec.get('vars', {}).copy()
+        self.context.update(context)
+        self.baseUri = apply_context(spec.get('baseUri', ''), self.context)
+        self.http = requests.Session()
+        headers = self.spec.get('headers') or {}
+        self.headers = apply_context(headers, self.context)
+        self.http.headers.update(self.headers)
+        # create actions
+        self.actions = []
+        self._parse_actions()
+
+    def _parse_actions(self):
+        """Get actions from loaded session spec"""
+        if 'requests' in self.spec and 'actions' in self.spec:
+            raise ParseError('Only one form should be used')
+        # skip files without requests at all
+        if 'requests' not in self.spec and 'actions' not in self.spec:
+            return []
+        entries = self.spec.get('requests') or self.spec.get('actions') or []
+        for item in entries:
+            self.actions.append(Action(item))
+
+    def __bool__(self):
+        return bool(self.actions)
+
+    @property
+    def filename(self):
+        return self.spec.get('filename')
+
+    @property
+    def title(self):
+        return self.spec.get('title', '') or self.spec.get('name', '') or self.spec.get('session', '')
+
+    def run(self, action=None):
+        executed = action.run(self.baseUri, self.context, self.http)
+        self.context.update(executed.vars)
+        return executed

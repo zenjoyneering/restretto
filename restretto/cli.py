@@ -8,8 +8,7 @@
 
 import sys
 import argparse
-from . import runner
-from . import loader
+from . import load
 
 
 parser = argparse.ArgumentParser(description="REST resources/endpoints testing tool")
@@ -22,23 +21,19 @@ parser.add_argument("-q", "--quiet", action="store_true")
 def main(args=sys.argv[1:]):
     arguments = parser.parse_args(args)
 
-    sources = loader.load(arguments.path)
-    if not sources:
+    sessions = load(arguments.path)
+    if not sessions:
         print("No test sessions found, exiting")
         sys.exit(1)
 
-    for spec in sources:
-        test_session = runner.Runner(spec)
-        hdr = "Test session: {}".format(spec.get('title', test_session.baseUri))
+    for test_session in sessions:
+        hdr = "Test session: {}".format(test_session.title)
         print(hdr)
         print('-' * len(hdr))
         for action in test_session.actions:
-            title = action.pop('title') if 'title' in action else action['url']
-            (response, error) = test_session.execute(action)
-            if error:
-                print("{}: failed".format(title))
-                print("    {}".format(str(error)))
-            else:
-                print("{}: passed".format(title))
+            try:
+                test_session.run(action)
+            except Exception as error:
+                print("{}: {}".format(action.title, error))
         print("")
         print("")

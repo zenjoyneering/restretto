@@ -7,27 +7,10 @@
 
 import yaml
 import os
+from .rest import Session
 
 
 SUPPORTED_EXTENSIONS = (".yml", ".yaml")
-
-
-
-class ParseError(Exception):
-    pass
-
-
-def get_actions(spec):
-    """Get actions from loaded session spec"""
-    if 'requests' in spec and 'actions' in spec:
-        raise ParseError('Only one form should be used')
-    # skip files without requests at all
-    if 'requests' not in spec and 'actions' not in spec:
-        return []
-    entries = spec.pop('requests') if 'requests' in spec else spec.pop('actions')
-    return entries or []
-
-
 
 
 def load(path):
@@ -47,12 +30,8 @@ def load(path):
         # silently skip empty files
         if not parsed:
             continue
-        # expand actions to standart form
-        parsed['actions'] = [
-            expand_action(action) for action in get_actions(parsed)
-        ]
-        # skip empty sessions
-        if  parsed['actions']:
-            data.append(parsed)
+        # add filename to spec
+        parsed['filename'] = entry
+        data.append(Session(parsed))
     # filter out empty elements (loaded from empty files)
     return [item for item in data if item]

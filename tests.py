@@ -43,11 +43,6 @@ class ActionTestCase(unittest.TestCase):
         with self.assertRaises(restretto.errors.ParseError):
             restretto.Action(spec)
 
-    def test_get_actions_requests(self):
-        spec = {'actions': [], 'requests': []}
-        with self.assertRaises(Exception):
-            restretto.loader.get_actions(spec)
-
     def test_assertion_conflict(self):
         spec = {
             'url': '/',
@@ -56,14 +51,6 @@ class ActionTestCase(unittest.TestCase):
         }
         with self.assertRaises(restretto.errors.ParseError):
             restretto.Action(spec)
-
-    def test_get_actions(self):
-        spec = {'actions': [{'url': '/sample'}]}
-        alt_spec = {'requests': [{'url': '/sample'}]}
-        actions = restretto.loader.get_actions(spec)
-        requests = restretto.loader.get_actions(alt_spec)
-        self.assertEqual(len(actions), 1)
-        self.assertEqual(actions, requests)
 
     def test_get_asserts(self):
         spec = {
@@ -100,6 +87,23 @@ class ActionTestCase(unittest.TestCase):
         ]
         self.assertEqual(action.request, expected_request)
         self.assertEqual(action.asserts, expected_asserts)
+
+
+class SessionTestCase(unittest.TestCase):
+
+    def test_context(self):
+        ctx = {'server': 'httpbin.org', 'token': 'secret'}
+        spec = {
+            'title': 'Sample',
+            'baseUri': 'http://{{server}}',
+            'headers': {
+                "X-Auth-Token": "{{token}}"
+            },
+            'actions': []
+        }
+        session = restretto.Session(spec, ctx)
+        self.assertEqual(session.baseUri, 'http://httpbin.org')
+        self.assertEqual(session.headers, {'X-Auth-Token': 'secret'})
 
 
 class AssertsTestCase(unittest.TestCase):
@@ -235,7 +239,7 @@ class TemplatingTestCase(unittest.TestCase):
                 'content': ['{{val}}']
             }
         }
-        result = restretto.templating.apply_context(src, self.VARS)
+        result = restretto.utils.apply_context(src, self.VARS)
         expected = {
             'url': 'http://httpbin.org/base',
             'headers': {
@@ -257,46 +261,46 @@ class LoaderFileLoadTestCase(unittest.TestCase):
 
     def test_load_unexisting_file(self):
         with self.assertRaises(FileNotFoundError):
-            restretto.loader.load("test-data/unesixtant_file.yml")
+            restretto.load("test-data/unesixtant_file.yml")
 
     def test_load_empty_file(self):
-        data = restretto.loader.load("test-data/empty.yml")
+        data = restretto.load("test-data/empty.yml")
         self.assertFalse(data)
 
     def test_load_bad_file(self):
         with self.assertRaises(Exception):
-            restretto.loader.load("test-data/broken/bad.yml")
+            restretto.load("test-data/broken/bad.yml")
 
     def test_load_valid_file(self):
-        data = restretto.loader.load("test-data/simple.yml")
+        data = restretto.load("test-data/simple.yml")
         self.assertEqual(len(data), 1)
 
     def test_empty_actions(self):
-        data = restretto.loader.load('test-data/empty-actions.yml')
+        data = restretto.load('test-data/empty-actions.yml')
         self.assertFalse(data)
 
     def test_missing_actions(self):
-        data = restretto.loader.load('test-data/missing-actions.yml')
+        data = restretto.load('test-data/missing-actions.yml')
         self.assertFalse(data)
 
     def test_actions_requests_error(self):
-        with self.assertRaises(restretto.loader.ParseError):
-            restretto.loader.load('test-data/broken/actions-with-requests.yml')
+        with self.assertRaises(restretto.errors.ParseError):
+            restretto.load('test-data/broken/actions-with-requests.yml')
 
 
 class LoaderDirLoadTestCase(unittest.TestCase):
 
     def test_load_from_dir(self):
-        data = restretto.loader.load("test-data/")
+        data = restretto.load("test-data/")
         self.assertEqual(len(data), 3)
 
     def test_load_from_unexistant_dir(self):
         with self.assertRaises(FileNotFoundError):
-            restretto.loader.load("test-data/missing-dir")
+            restretto.load("test-data/missing-dir")
 
     def test_load_from_bad_dir(self):
         with self.assertRaises(Exception):
-            restretto.loader.load("test-data/broken")
+            restretto.load("test-data/broken")
 
 
 if __name__ == "__main__":
