@@ -11,7 +11,7 @@ from .errors import ParseError
 HTTP_METHODS = frozenset(('get', 'options', 'head', 'post', 'put', 'patch', 'delete'))
 
 
-class RESTAction(object):
+class Action(object):
     """Single HTTP request action"""
 
     @staticmethod

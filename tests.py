@@ -8,40 +8,40 @@ import unittest
 import restretto
 
 
-class RESTActionTestCase(unittest.TestCase):
+class ActionTestCase(unittest.TestCase):
 
     def test_expand_action_method(self):
         spec = {'url': '/some/url', 'headers': {}}
-        action = restretto.RESTAction(spec)
+        action = restretto.Action(spec)
         expected = {'method': 'get', 'url': '/some/url', 'headers': {}}
         self.assertEqual(action.request, expected)
 
     def test_expand_action_url(self):
         spec = {'put': '/url', 'json': [1, 2]}
-        expanded = restretto.RESTAction(spec)
+        expanded = restretto.Action(spec)
         expected = {'method': 'put', 'url': '/url', 'json': [1, 2]}
         self.assertEqual(expanded.request, expected)
 
     def test_expanded_action(self):
         spec = {'url': '/url', 'method': 'delete'}
-        expanded = restretto.RESTAction(spec)
+        expanded = restretto.Action(spec)
         expected = spec
         self.assertEqual(expected, expanded.request)
 
     def test_empty_action(self):
         spec = {'headers': {}, 'body': ''}
         with self.assertRaises(restretto.errors.ParseError):
-            restretto.RESTAction(spec)
+            restretto.Action(spec)
 
     def test_missing_url(self):
         spec = {'method': 'options'}
         with self.assertRaises(restretto.errors.ParseError):
-            restretto.RESTAction(spec)
+            restretto.Action(spec)
 
     def test_invalid_method(self):
         spec = {'url': '/url', 'method': 'bad_method'}
         with self.assertRaises(restretto.errors.ParseError):
-            restretto.RESTAction(spec)
+            restretto.Action(spec)
 
     def test_get_actions_requests(self):
         spec = {'actions': [], 'requests': []}
@@ -55,7 +55,7 @@ class RESTActionTestCase(unittest.TestCase):
             'assert': [{'header': 'Content-Type'}]
         }
         with self.assertRaises(restretto.errors.ParseError):
-            restretto.RESTAction(spec)
+            restretto.Action(spec)
 
     def test_get_actions(self):
         spec = {'actions': [{'url': '/sample'}]}
@@ -72,7 +72,7 @@ class RESTActionTestCase(unittest.TestCase):
                 {'status': '200'}
             ]
         }
-        action = restretto.RESTAction(spec)
+        action = restretto.Action(spec)
         expected_request = {
             'url': '/url',
             'method': 'get',
@@ -90,7 +90,7 @@ class RESTActionTestCase(unittest.TestCase):
                 {'status': '500'}
             ]
         }
-        action = restretto.RESTAction(spec)
+        action = restretto.Action(spec)
         expected_request = {
             'url': '/url',
             'method': 'get',

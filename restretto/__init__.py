@@ -9,4 +9,4 @@ from . import loader
 from . import templating
 from . import assertions
 from . import errors
-from .action import RESTAction
+from .rest import Action
