@@ -34,8 +34,10 @@ def main(args=sys.argv[1:]):
         for action in test_session.actions:
             try:
                 test_session.run(action)
+                print("[PASS] {}: Ok".format(action.title))
             except ExpectError as failure:
                 print("[FAILURE] {}: {}".format(action.title, failure))
+                print("   " + action.response.text)
             except Exception as error:
                 print("[ERROR] {}: {}".format(action.title, error))
         print("")
