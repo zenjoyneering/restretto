@@ -1,55 +1,16 @@
 ---
-title: Demonstration of restretto features
-# baseUri can be tepmlated using vars (see below), or can be empty
-baseUri: http://{{service}}/
-
-# variables persists during session and available for all requests in file
-# vars can be overrided using command line option
-vars:
-    service: httpbin.org
-    payload: "sample data"
-
-# common headers for all requests
+title: Excpectations/Assertions
+baseUri: http://httpbin.org/
 headers:
     Accept: application/json
 
-# actions or requests, think of them as a test cases
-# 'actions' and 'requests' are interchangeable but only one form in file allowed
+
 actions:
 
-    # each url are joined with baseUri if it exists
-
-    # simpest get request fails if response is not any of 2xx
-    - url: /get
-
-    - get: /get
-      title: Verbose action
-
-    - title:  More verbose action
-      url: /get
-      method: get
-
-    - title: Posting json data
-      post: /post
-      json: {"key": "value"}
-
-    - title: Put raw data with headers
-      put: /put
-      headers:
-          Content-Type: text/plain
-      data: "Hello, httpbin"
-
-    - title: This should fail
-      get: /status/404
-
-    - title: This should fail too
-      put: /status/500
-
-    # excepts (or asserts, can be used interchangeable)
     - title: Expect for specific status
       get: /status/500
       expect:
-          - status: "500"
+          - status: 500
 
     - title: Expect for status range
       get: /status/404
@@ -98,12 +59,11 @@ actions:
           - header: X-Custom
             contains: foo
 
-    # in each action theese vars available: json, status, text
     - title: Test body value as text
       post: /post
       headers:
           Content-Type: text/plain
-      data: "{{payload}}"
+      data: "sample data"
       expect:
           # treat response body as text
           # check if body not empty
@@ -112,21 +72,24 @@ actions:
           - body: text
             contains: "data"
 
+    - title: Unexpected response (should fail)
+      post: /post
+      headers:
+          Content-Type: text/plain
+      data: "one text"
+      expect:
+          - body: text
+            contains: "one text"
+          - body: text
+            contains: "two text"
+
     - title: Test body value as json
       post: /post
       # content-type header will be set automatically if not provided
       json: {"key": "one", "nested": {"key": [1, 2, 3], "other": "two"}}
-      vars:
-          # extracting value from response json makes its available
-          # in subsequent requests
-          inner_key: "{{json.nested.other}}"
       expect:
           # treat body as a json, check if not empty or false
           - body: json
-          # compare selected property by json-path expression
-          #- body: json
-          #  property: nested.key.1
-          #  is: 2
           # check if contains key (httpbin return request info as json)
           - body: json
             contains: "json"

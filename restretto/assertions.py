@@ -38,7 +38,8 @@ class StatusCodeTest(ResponseTest):
     message = "Unexpected status ({0} instead of {1})"
 
     def __init__(self, status):
-        self.expected = status
+        # convert int code to str
+        self.expected = str(status) if isinstance(status, int) else status
 
     def test(self, response):
         if isinstance(self.expected, str):

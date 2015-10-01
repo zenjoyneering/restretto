@@ -14,9 +14,10 @@ from .errors import ExpectError
 
 parser = argparse.ArgumentParser(description="REST resources/endpoints testing tool")
 parser.add_argument("path", help="path to look for tests (file or directory)")
-parser.add_argument("--xunit", dest="xunit_dir", default=None,
-                    help="output xunit reports to this dir")
-parser.add_argument("-q", "--quiet", action="store_true")
+#parser.add_argument("--xunit", dest="xunit_dir", default=None,
+#                    help="output xunit reports to this dir")
+parser.add_argument("--print-passed", action="store_true", help="Print passed tests")
+parser.add_argument("--print-response", action="store_true", help="Print responses")
 
 
 def main(args=sys.argv[1:]):
@@ -34,10 +35,12 @@ def main(args=sys.argv[1:]):
         for action in test_session.actions:
             try:
                 test_session.run(action)
-                print("[PASS] {}: Ok".format(action.title))
+                if arguments.print_passed:
+                    print("[PASS] {}: Ok".format(action.title))
             except ExpectError as failure:
                 print("[FAILURE] {}: {}".format(action.title, failure))
-                print("   " + action.response.text)
+                if arguments.print_response:
+                    print(action.response.text)
             except Exception as error:
                 print("[ERROR] {}: {}".format(action.title, error))
         print("")
