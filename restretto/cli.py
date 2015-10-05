@@ -18,6 +18,10 @@ parser.add_argument("path", help="path to look for tests (file or directory)")
 #                    help="output xunit reports to this dir")
 parser.add_argument("--print-passed", action="store_true", help="Print passed tests")
 parser.add_argument("--print-response", action="store_true", help="Print responses")
+parser.add_argument(
+    "--debug-errors", action="store_true",
+    help="Open ipdb (should be isntalled) debugger on errors"
+)
 
 
 def main(args=sys.argv[1:]):
@@ -43,5 +47,8 @@ def main(args=sys.argv[1:]):
                     print(action.response.text)
             except Exception as error:
                 print("[ERROR] {}: {}".format(action.title, error))
+                if arguments.debug_errors:
+                    import ipdb
+                    ipdb.set_trace()
         print("")
         print("")

@@ -18,10 +18,22 @@ class ResponseTest(object):
         self.expect(response, self.message.format(response.status_code, response.reason))
 
     def assert_is(self, item, value):
-        self.expect(item == value, "{} != {}".format(item, value))
+        # coerce int and str types
+        types = set((type(item), type(value)))
+        if types == set((str, int)):
+            cond = str(item) == str(value)
+        else:
+            cond = item == value
+        self.expect(cond, "{} != {}".format(item, value))
 
     def assert_is_not(self, item, value):
-        self.expect(item != value, "{} == {}".format(item, value))
+        # coerce int and str types
+        types = set((type(item), type(value)))
+        if types == set((str, int)):
+            cond = str(item) != str(value)
+        else:
+            cond = item != value
+        self.expect(cond, "{} == {}".format(item, value))
 
     def assert_contains(self, item, value):
         self.expect(value in item, "{} not found in {}".format(value, item))
@@ -72,12 +84,28 @@ class HeaderTest(ResponsePropertyTest):
 
 class BodyTest(ResponsePropertyTest):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # pop property definition, if available
+        self.prop = self.statements.pop('property', None)
+
+    def _get_property(self, prop, data):
+        """Extract property by path"""
+        fragments = prop.split(".")[1:]
+        src = data
+        for p in fragments:
+            src = src.get(p, {})
+        return src
+
     def test(self, response):
         data = None
         if self.name == 'text':
             data = response.text
-        elif self.name == 'json':
+        elif self.name == 'json' and not self.prop:
             data = response.json()
+        elif self.name == 'json' and self.prop:
+            # get required property value
+            data = self._get_property(self.prop, response.json())
         self.expect(data, "Content not found or empty: {}".format(self.name))
         self.assert_statements(self.statements, data)
 

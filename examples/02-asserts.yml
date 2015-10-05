@@ -93,3 +93,28 @@ actions:
           # check if contains key (httpbin return request info as json)
           - body: json
             contains: "json"
+
+    - title: Test body properties
+      get: /get?var=12&tst=test_text
+      expect:
+        # check for existance, passed
+         - body: json
+           property: json.url
+
+         - body: json
+           property: json.args.var
+           is: 12
+
+         - body: json
+           property: json.args.var
+           is_not: 13
+
+         - body: json
+           property: json.args.tst
+           contains: test
+
+    - title: Property not found (should fail)
+      get: /get
+      expect:
+         - body: json
+           property: json.unexists
