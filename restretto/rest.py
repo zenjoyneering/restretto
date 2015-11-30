@@ -7,6 +7,7 @@
 import requests
 from urllib.request import urljoin
 
+from .utils import json_path
 from . import assertions
 from .errors import ParseError
 from .utils import apply_context
@@ -94,6 +95,17 @@ class Action(object):
             # reraise
             raise
         # save context vars
+        if self.vars:
+            try:
+                data = {
+                    'json': self.response.json(),
+                    'headers': self.response.headers
+                }
+                for name, path in self.vars.items():
+                    self.vars[name] = json_path(path, data)
+            except ValueError:
+                # no json, it's can be ok
+                pass
         return self
 
 

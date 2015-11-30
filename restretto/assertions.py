@@ -3,6 +3,7 @@
 
 
 from fnmatch import fnmatch
+from .utils import json_path
 from .errors import ExpectError
 
 
@@ -89,14 +90,6 @@ class BodyTest(ResponsePropertyTest):
         # pop property definition, if available
         self.prop = self.statements.pop('property', None)
 
-    def _get_property(self, prop, data):
-        """Extract property by path"""
-        fragments = prop.split(".")[1:]
-        src = data
-        for p in fragments:
-            src = src.get(p, {})
-        return src
-
     def test(self, response):
         data = None
         if self.name == 'text':
@@ -105,7 +98,7 @@ class BodyTest(ResponsePropertyTest):
             data = response.json()
         elif self.name == 'json' and self.prop:
             # get required property value
-            data = self._get_property(self.prop, response.json())
+            data = json_path(self.prop, {'json': response.json()})
         self.expect(data, "Content not found or empty: {}".format(self.name))
         self.assert_statements(self.statements, data)
 
