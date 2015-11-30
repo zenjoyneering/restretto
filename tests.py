@@ -6,6 +6,7 @@
 
 import unittest
 import restretto
+import restretto.cli
 
 
 class ActionTestCase(unittest.TestCase):
@@ -305,6 +306,41 @@ class LoaderDirLoadTestCase(unittest.TestCase):
     def test_load_from_bad_dir(self):
         with self.assertRaises(Exception):
             restretto.load("test-data/broken")
+
+
+class OptionsTestCase(unittest.TestCase):
+
+    def test_convert_single(self):
+        encoded = "key=val"
+        options = restretto.cli.options(encoded)
+        self.assertEqual(options, {"key": "val"})
+
+    def test_convert_multi(self):
+        encoded = "key=val,other=second, yet=another again "
+        options = restretto.cli.options(encoded)
+        expected = {
+            "key": "val",
+            "other": "second",
+            "yet": "another again"
+        }
+        self.assertEqual(options, expected)
+
+    def test_convert_empty_val(self):
+        encoded = "oops=, second=two"
+        expected = {
+            "oops": "",
+            "second": "two"
+        }
+        options = restretto.cli.options(encoded)
+        self.assertEqual(options, expected)
+
+    def test_convert_empty_key(self):
+        with self.assertRaises(restretto.cli.ArgumentTypeError):
+            restretto.cli.options("=value")
+
+    def test_convert_empty_keyval(self):
+        with self.assertRaises(restretto.cli.ArgumentTypeError):
+            restretto.cli.options(" = ")
 
 
 if __name__ == "__main__":

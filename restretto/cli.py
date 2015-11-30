@@ -7,17 +7,34 @@
 
 
 import sys
-import argparse
+from argparse import ArgumentParser, ArgumentTypeError
 from . import load
 from .errors import ExpectError
 
 
-parser = argparse.ArgumentParser(description="REST resources/endpoints testing tool")
+def options(encoded):
+    """Returns dict parsed from encoded string in form key1=val1,key2=val2"""
+    opts = {}
+    try:
+        parts = (p.strip().split("=") for p in encoded.split(",") if p.strip())
+        for key, val in parts:
+            if not key.strip():
+                raise ValueError
+            opts[key.strip()] = val.strip()
+    except Exception:
+        raise ArgumentTypeError(encoded)
+    return opts
+
+
+parser = ArgumentParser(description="REST resources/endpoints testing tool")
 parser.add_argument("path", help="path to look for tests (file or directory)")
 #parser.add_argument("--xunit", dest="xunit_dir", default=None,
 #                    help="output xunit reports to this dir")
 parser.add_argument("--print-passed", action="store_true", help="Print passed tests")
 parser.add_argument("--print-response", action="store_true", help="Print responses")
+parser.add_argument(
+    "--vars", action="store", type=options,
+    help="Context variables as var1=val1,var2=val2")
 parser.add_argument(
     "--debug-errors", action="store_true",
     help="Open ipdb (should be isntalled) debugger on errors"
