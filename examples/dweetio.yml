@@ -6,14 +6,14 @@ headers:
 
 actions:
 
-    - post: /dweet/for/sample_weird_thing
+    - post: /dweet/for/{{thing}}
       headers:
         Content-Type: application/json
-      json: {"message": "Hello from yml"}
+      json: {"message": "{{message}}"}
 
     - title: Get latest dweets
-      get: /get/latest/dweet/for/sample_weird_thing
+      get: /get/latest/dweet/for/{{thing}}
 
     - title: Get all available dweets
-      url: /get/dweets/for/sample_weird_thing
+      url: /get/dweets/for/{{thing}}
       method: get

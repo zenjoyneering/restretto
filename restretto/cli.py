@@ -55,7 +55,7 @@ def main(args=sys.argv[1:]):
         print('-' * len(hdr))
         for action in test_session.actions:
             try:
-                test_session.run(action)
+                test_session.run(action, context=arguments.vars)
                 if arguments.print_passed:
                     print("[PASS] {}: Ok".format(action.title))
                 if arguments.print_response:

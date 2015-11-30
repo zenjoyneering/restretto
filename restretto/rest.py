@@ -147,7 +147,9 @@ class Session(object):
     def title(self):
         return self.spec.get('title', '') or self.spec.get('name', '') or self.spec.get('session', '')
 
-    def run(self, action=None):
-        executed = action.run(self.baseUri, self.context, self.http)
+    def run(self, action=None, context=None):
+        context = context or {}
+        context.update(self.context)
+        executed = action.run(self.baseUri, context, self.http)
         self.context.update(executed.vars)
         return executed
