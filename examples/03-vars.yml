@@ -1,0 +1,34 @@
+---
+title: Variables usage and binding
+vars:
+    server: httpbin.org
+    content_type: applictions/json
+    extra_header: Extra header
+    test_value: foobarbaz
+baseUri: http://{{server}}/
+headers:
+    Accept: "{{content_type}}"
+
+
+actions:
+
+    - title: Sample get
+      get: /headers
+      headers:
+          X-Extra: "{{extra_header}}"
+      expect:
+          - body: json
+            property: json.headers
+            contains: X-Extra
+
+    - title: Extract some vars from json
+      get: /get?a={{test_value}}
+      vars:
+          received: json.args.a
+
+    - title: Use stored var
+      get: /get?b={{received}}
+      expect:
+          - body: json
+            property: json.args.b
+            is: "{{test_value}}"
