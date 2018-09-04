@@ -2,7 +2,7 @@
 title: Variables usage and binding
 vars:
     server: httpbin.org
-    content_type: applictions/json
+    content_type: appliction/json
     extra_header: Extra header
     test_value: foobarbaz
 baseUri: http://{{server}}/
@@ -10,7 +10,7 @@ headers:
     Accept: "{{content_type}}"
 
 
-actions:
+resources:
 
     - title: Sample get
       get: /headers

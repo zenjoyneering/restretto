@@ -4,7 +4,7 @@ baseUri: http://dweet.io/
 headers:
     Accept: application/json
 
-actions:
+resources:
 
     - post: /dweet/for/{{thing}}
       headers:

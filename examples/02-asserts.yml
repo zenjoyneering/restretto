@@ -5,7 +5,7 @@ headers:
     Accept: application/json
 
 
-actions:
+resources:
 
     - title: Expect for specific status
       get: /status/500

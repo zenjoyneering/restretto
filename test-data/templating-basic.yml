@@ -10,7 +10,7 @@ vars:
 
 
 baseUrl: "{{scheme}}://{server}"
-requests:
+resources:
 
     - title: Url templating
       url: /headers?{{extra.header}}={extra.value}

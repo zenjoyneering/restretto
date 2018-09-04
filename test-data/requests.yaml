@@ -2,7 +2,7 @@
 title: Alternative syntax
 baseUrl: http://127.0.0.1
 headers:
-requests:
+resources:
     - get: /root
 
     - put: /method

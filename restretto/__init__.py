@@ -8,5 +8,5 @@
 from . import assertions
 from . import errors
 from . import utils
-from .rest import Action, Session
+from .rest import Resource, Session
 from .loader import load

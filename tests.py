@@ -9,40 +9,46 @@ import restretto
 import restretto.cli
 
 
-class ActionTestCase(unittest.TestCase):
+class ResourceTestCase(unittest.TestCase):
 
-    def test_expand_action_method(self):
+    def test_parse_from_str(self):
+        spec = '/some/uri'
+        res = restretto.Resource(spec)
+        expected = {'method': 'get', 'url': spec}
+        self.assertEqual(res.request, expected)
+
+    def test_expand_resource_method(self):
         spec = {'url': '/some/url', 'headers': {}}
-        action = restretto.Action(spec)
+        action = restretto.Resource(spec)
         expected = {'method': 'get', 'url': '/some/url', 'headers': {}}
         self.assertEqual(action.request, expected)
 
-    def test_expand_action_url(self):
+    def test_expand_resource_url(self):
         spec = {'put': '/url', 'json': [1, 2]}
-        expanded = restretto.Action(spec)
+        expanded = restretto.Resource(spec)
         expected = {'method': 'put', 'url': '/url', 'json': [1, 2]}
         self.assertEqual(expanded.request, expected)
 
-    def test_expanded_action(self):
+    def test_expanded_resource(self):
         spec = {'url': '/url', 'method': 'delete'}
-        expanded = restretto.Action(spec)
+        expanded = restretto.Resource(spec)
         expected = spec
         self.assertEqual(expected, expanded.request)
 
-    def test_empty_action(self):
+    def test_empty_resource(self):
         spec = {'headers': {}, 'body': ''}
         with self.assertRaises(restretto.errors.ParseError):
-            restretto.Action(spec)
+            restretto.Resource(spec)
 
     def test_missing_url(self):
         spec = {'method': 'options'}
         with self.assertRaises(restretto.errors.ParseError):
-            restretto.Action(spec)
+            restretto.Resource(spec)
 
     def test_invalid_method(self):
         spec = {'url': '/url', 'method': 'bad_method'}
         with self.assertRaises(restretto.errors.ParseError):
-            restretto.Action(spec)
+            restretto.Resource(spec)
 
     def test_assertion_conflict(self):
         spec = {
@@ -51,7 +57,7 @@ class ActionTestCase(unittest.TestCase):
             'assert': [{'header': 'Content-Type'}]
         }
         with self.assertRaises(restretto.errors.ParseError):
-            restretto.Action(spec)
+            restretto.Resource(spec)
 
     def test_get_asserts(self):
         spec = {
@@ -60,7 +66,7 @@ class ActionTestCase(unittest.TestCase):
                 {'status': '200'}
             ]
         }
-        action = restretto.Action(spec)
+        action = restretto.Resource(spec)
         expected_request = {
             'url': '/url',
             'method': 'get',
@@ -78,7 +84,7 @@ class ActionTestCase(unittest.TestCase):
                 {'status': '500'}
             ]
         }
-        action = restretto.Action(spec)
+        action = restretto.Resource(spec)
         expected_request = {
             'url': '/url',
             'method': 'get',
@@ -280,17 +286,13 @@ class LoaderFileLoadTestCase(unittest.TestCase):
         data = restretto.load("test-data/simple.yml")
         self.assertEqual(len(data), 1)
 
-    def test_empty_actions(self):
-        data = restretto.load('test-data/empty-actions.yml')
+    def test_empty_resources(self):
+        data = restretto.load('test-data/empty-resources.yml')
         self.assertFalse(data)
 
-    def test_missing_actions(self):
-        data = restretto.load('test-data/missing-actions.yml')
+    def test_missing_resources(self):
+        data = restretto.load('test-data/missing-resources.yml')
         self.assertFalse(data)
-
-    def test_actions_requests_error(self):
-        with self.assertRaises(restretto.errors.ParseError):
-            restretto.load('test-data/broken/actions-with-requests.yml')
 
 
 class LoaderDirLoadTestCase(unittest.TestCase):

@@ -5,13 +5,16 @@ baseUri: http://httpbin.org/
 headers:
     Accept: application/json
 
-# actions or requests, think of them as a test cases
-# 'actions' and 'requests' are interchangeable but only one form in file allowed
-actions:
+# resources, think of them as a test cases
+resources:
 
     # each url are joined with baseUri if it exists
-
     # simpest get request fails if response is not any of 2xx
+
+    # most shortest form 
+    - /get
+
+    # same as previous
     - url: /get
 
     - get: /get

@@ -53,19 +53,20 @@ def main(args=sys.argv[1:]):
         hdr = "Test session: {}".format(test_session.title)
         print(hdr)
         print('-' * len(hdr))
-        for action in test_session.actions:
+        for resource in test_session.resources:
             try:
-                test_session.run(action, context=arguments.vars)
+                test_session.test(resource, context=arguments.vars)
                 if arguments.print_passed:
-                    print("[PASS] {}: Ok".format(action.title))
+                    # TODO: print response status instead
+                    print("[PASS] {}: Ok".format(resource.title))
                 if arguments.print_response:
                     print(action.response.text)
             except ExpectError as failure:
-                print("[FAILURE] {}: {}".format(action.title, failure))
+                print("[FAILURE] {}: {}".format(resource.title, failure))
                 if arguments.print_response:
-                    print(action.response.text)
+                    print(resource.response.text)
             except Exception as error:
-                print("[ERROR] {}: {}".format(action.title, error))
+                print("[ERROR] {}: {}".format(resource.title, error))
                 if arguments.debug_errors:
                     import ipdb
                     ipdb.set_trace()
