@@ -80,16 +80,15 @@ class Resource(object):
 
     def test(self, baseUri='', context={}, session=None):
         """Make request, perform assertion testing"""
-        self.request['url'] = urljoin(baseUri, self.request['url'])
+        self.request['url'] = urljoin(baseUri, self.request['url'].lstrip('/'))
         # apply template to request and assertions
         self.request = apply_context(self.request, context)
         self.asserts = apply_context(self.asserts, context)
         # create assertions
         assertion = assertions.Assert(self.asserts)
         # get response
-        request = requests.Request(**self.request).prepare()
         http = session or requests.Session()
-        self.response = http.send(request)
+        self.response = http.request(**self.request)
         # test assertion, will raise an excep
         try:
             assertion.test(self.response)
