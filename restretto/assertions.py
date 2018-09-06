@@ -107,12 +107,16 @@ class Assert(object):
 
     def __init__(self, statements=[]):
         self.statements = []
+        self._has_status_test = False
         if not statements:
             # assume default simple check
             self.statements = [ResponseTest()]
         else:
             for spec in statements:
                 self.statements.append(self.statement(spec))
+            if not self._has_status_test:
+                # add default test for status_code to be ok
+                self.statements.insert(0, ResponseTest())
 
     def test(self, response):
         for stmt in self.statements:
@@ -123,6 +127,7 @@ class Assert(object):
         """Statement factory"""
         spec = dict(spec)
         if 'status' in spec:
+            self._has_status_test = True
             return StatusCodeTest(spec['status'])
         if 'header' in spec:
             return HeaderTest(spec.pop('header'), spec)

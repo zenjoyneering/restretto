@@ -10,6 +10,7 @@ import sys
 from argparse import ArgumentParser, ArgumentTypeError
 from . import load
 from .errors import ExpectError
+from clint.textui import colored, puts
 
 
 def options(encoded):
@@ -49,6 +50,7 @@ def main(args=sys.argv[1:]):
         print("No test sessions found, exiting")
         sys.exit(1)
 
+    passed = failed = errors = 0
     for test_session in sessions:
         hdr = "Test session: {}".format(test_session.title)
         print(hdr)
@@ -58,17 +60,28 @@ def main(args=sys.argv[1:]):
                 test_session.test(resource, context=arguments.vars)
                 if arguments.print_passed:
                     # TODO: print response status instead
-                    print("[PASS] {}: Ok".format(resource.title))
-                if arguments.print_response:
-                    print(action.response.text)
-            except ExpectError as failure:
-                print("[FAILURE] {}: {}".format(resource.title, failure))
+                    print("{} {}: Ok".format(colored.green("[PASS]"), resource.title))
                 if arguments.print_response:
                     print(resource.response.text)
+                passed += 1
+            except ExpectError as failure:
+                print("{} {}: {}".format(colored.red("[FAIL]"), resource.title, failure))
+                if arguments.print_response:
+                    print(resource.response.text)
+                failed += 1
             except Exception as error:
-                print("[ERROR] {}: {}".format(resource.title, error))
+                print("{} {}: {}".format(colored.yellow("[ERROR]"), resource.title, error))
+                # TODO: remove it
                 if arguments.debug_errors:
                     import ipdb
                     ipdb.set_trace()
+                errors += 1
         print("")
-        print("")
+    totals = "Total: {} / Passed: {} / Errors: {} / Failed: {}".format(
+        passed+failed+errors, colored.green(passed), colored.yellow(errors), colored.red(failed)
+    )
+    print("-" * len(totals))
+    print(totals)
+    print("")
+    return 1 if (failed or errors) else 0
+

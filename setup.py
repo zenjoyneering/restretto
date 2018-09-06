@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="restretto",
-    version="0.31",
+    version="0.32",
     description="restretto is REST API testing tool",
     #long_description=description,
     author="Arthur Orlov",
@@ -13,7 +13,7 @@ setup(
     license="",
     packages=find_packages(),
     entry_points={"console_scripts": ["restretto = restretto.cli:main"]},
-    install_requires=["requests>=2.7.0", "pyaml>=3.11", "jinja2>=2.8"],
+    install_requires=["requests>=2.7.0", "pyaml>=3.11", "jinja2>=2.8", "clint>=0.5"],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Environment :: Console",
