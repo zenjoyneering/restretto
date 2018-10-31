@@ -124,6 +124,7 @@ class Session(object):
         headers = self.spec.get('headers') or {}
         self.headers = apply_context(headers, self.context)
         self.http.headers.update(self.headers)
+        self.http.verify = spec.get('verify', False)
         # create resources
         self.resources = []
         self._parse_resources()
