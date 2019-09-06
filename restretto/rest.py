@@ -29,7 +29,8 @@ class Resource(object):
             'headers': spec.get('headers'),
             'params': spec.get('params'),
             'data': spec.get('data'),
-            'json': spec.get('json')
+            'json': spec.get('json'),
+            'files': spec.get('files')
         }
         if request['url'] and not request['method']:
             # if url is given, assume methid is get
@@ -84,6 +85,14 @@ class Resource(object):
         # apply template to request and assertions
         self.request = apply_context(self.request, context)
         self.asserts = apply_context(self.asserts, context)
+        # load files, if provided
+        # TODO: add mimetype detection
+        # TODO: files should be searched relative to current yml
+        file_data = self.request.pop('files', {})
+        if file_data:
+            self.request['files'] = {}
+            for file_name, file_path in file_data.items():
+                self.request['files'][file_name] = open(file_path, 'rb')
         # create assertions
         assertion = assertions.Assert(self.asserts)
         # get response
