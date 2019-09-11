@@ -26,7 +26,7 @@ def load(path):
         files.append(path)
     for entry in files:
         with open(entry) as source:
-            parsed = yaml.load(source)
+            parsed = yaml.full_load(source)
         # silently skip empty files
         if not parsed:
             continue

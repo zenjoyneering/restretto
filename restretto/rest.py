@@ -108,16 +108,17 @@ class Resource(object):
             raise
         # save context vars
         if self.vars:
+            data = {
+                'headers': self.response.headers
+            }
             try:
-                data = {
-                    'json': self.response.json(),
-                    'headers': self.response.headers
-                }
-                for name, path in self.vars.items():
-                    self.vars[name] = json_path(path, data)
+                data['json'] = self.response.json()
             except ValueError:
                 # no json, it's can be ok
+                data['json'] = None
                 pass
+            for name, path in self.vars.items():
+                self.vars[name] = json_path(path, data)
         return self
 
 

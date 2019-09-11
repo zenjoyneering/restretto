@@ -8,7 +8,7 @@ from jinja2 import Template
 
 def apply_context(src, context={}):
     """Apply context to dict"""
-    return yaml.load(Template(yaml.dump(src)).render(context))
+    return yaml.full_load(Template(yaml.dump(src)).render(context))
 
 
 def json_path(path, data):
