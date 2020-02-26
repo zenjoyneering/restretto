@@ -78,7 +78,7 @@ def main(args=sys.argv[1:]):
                 errors += 1
         print("")
     totals = "Total: {} / Passed: {} / Errors: {} / Failed: {}".format(
-        passed+failed+errors, colored.green(passed), colored.yellow(errors), colored.red(failed)
+        str(passed+failed+errors), colored.green(str(passed)), colored.yellow(str(errors)), colored.red(str(failed))
     )
     print("-" * len(totals))
     print(totals)
