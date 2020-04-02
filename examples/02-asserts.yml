@@ -118,3 +118,42 @@ resources:
       expect:
          - body: json
            property: json.unexists
+
+    - title: JSON lists in object assertions
+      post: /post
+      json: {"key": "val", "list": ["one", "two", "three"]}
+      expect:
+        - body: json
+          property: json.json.key
+          is: "val"
+        # list numbering starts form 0, as usual
+        - body: json
+          property: json.json.list.0
+          is: "one"
+        - body: json
+          property: json.json.list.2
+          is_not: "two"
+        # lists can be checked for length
+        - body: json
+          property: json.json.list
+          length: 3
+        # and not only lists
+        - body: json
+          property: json.json
+          length: 2
+
+    - title: Failng list check (should fail)
+      post: /post
+      json: ["a", "b", "c"]
+      expect:
+        - body: json
+          property: json.json.1
+          is: "x"
+
+    - title: Failng list length check (should fail)
+      post: /post
+      json: ["x", "y", "z"]
+      expect:
+        - body: json
+          property: json.json
+          length: 2

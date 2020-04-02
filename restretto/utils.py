@@ -16,5 +16,6 @@ def json_path(path, data):
     fragments = path.split(".")
     src = data
     for p in fragments:
-        src = src.get(p, {})
+        src = src[int(p)] if (isinstance(src, list) and p.isdigit()) \
+            else src.get(p, {})
     return src
