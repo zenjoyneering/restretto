@@ -39,6 +39,12 @@ class ResponseTest(object):
     def assert_contains(self, item, value):
         self.expect(value in item, "{} not found in {}".format(value, item))
 
+    def assert_length(self, item, value):
+        self.expect(
+            len(item) == value,
+            "Length mismatch: got {} intead of expected {}".format(len(item), value)
+        )
+
     def assert_statements(self, statements, item):
         # assert all conditions are satisfied
         for (cond, value) in statements.items():
