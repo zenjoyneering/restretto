@@ -1,0 +1,12 @@
+first_test_value: first
+test_value: foobarbaz
+big_json_body:
+  property_one: string
+  property_two:
+    - an
+    - nested
+    - list
+  property_three:
+    nested: true
+    items: [1, 2, 3]
+    value: string

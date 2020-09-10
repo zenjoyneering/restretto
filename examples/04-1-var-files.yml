@@ -1,0 +1,31 @@
+---
+title: Variables usage and binding, multiple files
+vars: 
+  - sample_vars_1.yml
+  - sample_vars_2.yml
+baseUri: http://httpbin.org/
+headers:
+    Accept: "application/json"
+
+resources:
+
+    - title: get clean value from first file
+      get: /get?b={{first_test_value}}
+      expect:
+          - body: json
+            property: json.args.b
+            is: "first"
+
+    - title: get clean value from second file
+      get: /get?b={{second_test_value}}
+      expect:
+          - body: json
+            property: json.args.b
+            is: "second"
+
+    - title: get overrided value from second file
+      get: /get?b={{test_value}}
+      expect:
+          - body: json
+            property: json.args.b
+            is: "overrided"
