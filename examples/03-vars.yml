@@ -5,6 +5,16 @@ vars:
     content_type: appliction/json
     extra_header: Extra header
     test_value: foobarbaz
+    big_json_body: &nested
+      property_one: string
+      property_two:
+        - an
+        - nested
+        - list
+      property_three:
+        nested: true
+        items: [1, 2, 3]
+        value: string
 baseUri: http://{{server}}/
 headers:
     Accept: "{{content_type}}"
@@ -32,3 +42,19 @@ resources:
           - body: json
             property: json.args.b
             is: "{{test_value}}"
+
+    - title: Post json body from complex variable value using yaml refs
+      post: /post
+      json: *nested
+      expect:
+        - body: json
+          property: json.json
+          is: *nested
+
+    - title: Post json body from complex variable value using templating
+      post: /post
+      json: "{{ big_json_body }}"
+      expect:
+        - body: json
+          property: json.json
+          is: "{{ big_json_body }}"

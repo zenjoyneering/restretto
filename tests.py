@@ -232,7 +232,18 @@ class TemplatingTestCase(unittest.TestCase):
             'payload_data': 'hello from vars'
         },
         'val': 100,
-        'accept': 'application/json'
+        'accept': 'application/json',
+        "nested": {
+            "simple": "string",
+            "items": [1, 2, 3],
+            "obj": {
+                "inner": True,
+                "nested_items": ["a", "b"],
+                "nested_obj": {
+                    "x": "y"
+                }
+            }
+        }
     }
 
     def test_template_complex(self):
@@ -262,11 +273,32 @@ class TemplatingTestCase(unittest.TestCase):
             ],
             'json': {
                 'option': 12,
-                'content': ['100']
+                'content': [100]
             }
         }
         self.assertEqual(result, expected)
 
+    def test_nested_and_list(self):
+        src = {
+            "simple": "{{ server }}",
+            "concatenated": "{{scheme}}://{{server}}",
+            "items": [
+                "{{accept}}",
+                "{{extra.header}}:{{extra.value}}"
+            ],
+            "nested": "{{nested}}"
+        }
+        result = restretto.utils.apply_context(src, self.VARS)
+        expected = {
+            "simple": "httpbin.org",
+            "concatenated": "http://httpbin.org",
+            "items": [
+                "application/json",
+                "X-Custom:custom-value"
+            ],
+            "nested": self.VARS["nested"]
+        }
+        self.assertEqual(result, expected)
 
 class LoaderFileLoadTestCase(unittest.TestCase):
 

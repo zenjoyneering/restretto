@@ -8,7 +8,24 @@ from jinja2 import Template
 
 def apply_context(src, context={}):
     """Apply context to dict"""
-    return yaml.full_load(Template(yaml.dump(src)).render(context))
+    result = None
+    if type(src) is dict:
+        # traverse nested dict
+        result = {}
+        for (k, v) in src.items():
+            result[k] = apply_context(v, context)
+    elif type(src) is list:
+        # traverse list recursively
+        result = []
+        for i, item in enumerate(src):
+            result.append(apply_context(item, context))
+    elif type(src) is str:
+        #just apply template, assuming it's
+        result = yaml.full_load(Template(src).render(context))
+    else:
+        # integers/boolean and other non-templatable types
+        result = src
+    return result
 
 
 def json_path(path, data):
