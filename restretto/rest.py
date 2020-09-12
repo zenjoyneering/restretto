@@ -105,6 +105,11 @@ class Resource(object):
                     for f in file_path:
                         self.request['files'].append((file_name, open(f, 'rb')))
 
+        # make sure all headers are strings
+        if "headers" in self.request:
+            for k, v in self.request["headers"].items():
+                self.request["headers"][k] = str(v)
+
         # create assertions
         assertion = assertions.Assert(self.asserts)
         # get response
@@ -145,6 +150,9 @@ class Session(object):
         self.http = requests.Session()
         headers = self.spec.get('headers') or {}
         self.headers = apply_context(headers, self.context)
+        # make sure all headers are strings
+        for k, v in self.headers.items():
+            self.headers[k] = str(v)
         self.http.headers.update(self.headers)
         self.http.verify = spec.get('verify', False)
         # create resources

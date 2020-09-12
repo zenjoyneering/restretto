@@ -3,6 +3,7 @@ title: Excpectations/Assertions
 baseUri: http://httpbin.org/
 headers:
     Accept: application/json
+    X-Extra: 1234.0
 
 
 resources:
@@ -29,6 +30,8 @@ resources:
 
     - title: Expect headers
       get: /response-headers?X-Custom-Header=value&X-Sample=other
+      headers:
+        X-More-One: 567.9
       expect:
           # True if header exists
           - header: X-Custom-Header
@@ -41,6 +44,7 @@ resources:
           # True if header's value contain substring
           - header: X-Sample
             contains: the
+
 
     - title: Missing header (should fail)
       get: /response-headers?X-Custom=test
