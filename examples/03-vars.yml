@@ -2,6 +2,7 @@
 title: Variables usage and binding
 vars:
     server: httpbin.org
+    number: 1234.5
     content_type: appliction/json
     extra_header: Extra header
     test_value: foobarbaz
@@ -37,11 +38,14 @@ resources:
           received: json.args.a
 
     - title: Use stored var
-      get: /get?b={{received}}
+      get: /get?b={{received}}&z={{number}}
       expect:
           - body: json
             property: json.args.b
             is: "{{test_value}}"
+          - body: json
+            property: json.args.z
+            is: "{{number}}"
 
     - title: Post json body from complex variable value using yaml refs
       post: /post
