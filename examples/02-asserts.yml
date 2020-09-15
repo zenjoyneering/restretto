@@ -90,7 +90,7 @@ resources:
     - title: Test body value as json
       post: /post
       # content-type header will be set automatically if not provided
-      json: {"key": "one", "nested": {"key": [1, 2, 3], "other": "two"}}
+      json: {"key": "one", "date":  "2017-09-30T05:00:00", "nested": {"key": [1, 2, 3], "other": "two"}}
       expect:
           # treat body as a json, check if not empty or false
           - body: json
