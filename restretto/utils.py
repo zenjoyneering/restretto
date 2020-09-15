@@ -19,8 +19,8 @@ def apply_context(src, context={}):
         result = []
         for i, item in enumerate(src):
             result.append(apply_context(item, context))
-    elif type(src) is str:
-        #just apply template, assuming it's
+    elif type(src) is str and "{{" in src:
+        #just apply template if string contains var
         result = yaml.full_load(Template(src).render(context))
     else:
         # integers/boolean and other non-templatable types
