@@ -3,6 +3,7 @@ title: Excpectations/Assertions
 baseUri: http://httpbin.org/
 headers:
     Accept: application/json
+    X-Extra: 1234.0
 
 
 resources:
@@ -29,6 +30,8 @@ resources:
 
     - title: Expect headers
       get: /response-headers?X-Custom-Header=value&X-Sample=other
+      headers:
+        X-More-One: 567.9
       expect:
           # True if header exists
           - header: X-Custom-Header
@@ -41,6 +44,7 @@ resources:
           # True if header's value contain substring
           - header: X-Sample
             contains: the
+
 
     - title: Missing header (should fail)
       get: /response-headers?X-Custom=test
@@ -86,7 +90,7 @@ resources:
     - title: Test body value as json
       post: /post
       # content-type header will be set automatically if not provided
-      json: {"key": "one", "nested": {"key": [1, 2, 3], "other": "two"}}
+      json: {"key": "one", "date":  "2017-09-30T05:00:00", "nested": {"key": [1, 2, 3], "other": "two"}}
       expect:
           # treat body as a json, check if not empty or false
           - body: json

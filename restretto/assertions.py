@@ -19,9 +19,9 @@ class ResponseTest(object):
         self.expect(response, self.message.format(response.status_code, response.reason))
 
     def assert_is(self, item, value):
-        # coerce int and str types
+        # coerce numberic and str types
         types = set((type(item), type(value)))
-        if types == set((str, int)):
+        if types == set((str, int)) or types == set((str, float)):
             cond = str(item) == str(value)
         else:
             cond = item == value

@@ -89,10 +89,27 @@ class Resource(object):
         # TODO: add mimetype detection
         # TODO: files should be searched relative to current yml
         file_data = self.request.pop('files', {})
-        if file_data:
-            self.request['files'] = {}
+        if type(file_data) is list:
+            # parsing files: [file1, file2] structure, assuming name as "files"
+            file_data = {
+                'files': file_data
+            }
+        # TODO: raise exception on parsing not-dict structure
+        if type(file_data) is dict:
+            # parsing name: file or name: [file1, file2] structure
+            self.request['files'] = []
             for file_name, file_path in file_data.items():
-                self.request['files'][file_name] = open(file_path, 'rb')
+                if type(file_path) is str:
+                    self.request['files'].append((file_name, open(file_path, 'rb')))
+                elif type(file_path) is list:
+                    for f in file_path:
+                        self.request['files'].append((file_name, open(f, 'rb')))
+
+        # make sure all headers are strings
+        if "headers" in self.request:
+            for k, v in self.request["headers"].items():
+                self.request["headers"][k] = str(v)
+
         # create assertions
         assertion = assertions.Assert(self.asserts)
         # get response
@@ -133,6 +150,9 @@ class Session(object):
         self.http = requests.Session()
         headers = self.spec.get('headers') or {}
         self.headers = apply_context(headers, self.context)
+        # make sure all headers are strings
+        for k, v in self.headers.items():
+            self.headers[k] = str(v)
         self.http.headers.update(self.headers)
         self.http.verify = spec.get('verify', False)
         # create resources

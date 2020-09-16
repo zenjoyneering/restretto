@@ -1,0 +1,41 @@
+---
+title: File uploading
+baseUri: http://httpbin.org/
+headers:
+    Accept: "application/json"
+
+resources:
+
+    - title: Upload single file
+      post: /post
+      files:
+        sample_1: examples/sample_vars_1.yml
+        sample_2: examples/sample_vars_2.yml
+      expect:
+        - body: json
+          contains: files
+        - body: json
+          property: json.files.sample_1
+        - body: json
+          property: json.files.sample_2
+
+    - title: Upload list of files
+      post: /post
+      files:
+        - examples/sample_vars_1.yml
+        - examples/sample_vars_2.yml
+      expect:
+        - body: json
+          contains: files
+
+    - title: Upload list of files eith custom filed name
+      post: /post
+      files:
+        items:
+          - examples/sample_vars_1.yml
+          - examples/sample_vars_2.yml
+        single: examples/05-file-uploads.yml
+      expect:
+        - body: json
+          contains: files
+

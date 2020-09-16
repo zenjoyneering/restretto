@@ -1,0 +1,29 @@
+---
+title: Variables usage and binding
+vars: sample_vars_1.yml
+baseUri: http://httpbin.org/
+headers:
+    Accept: "application/json"
+
+resources:
+
+    - title: Extract some vars from json
+      get: /get?a={{test_value}}
+      vars:
+          received: json.args.a
+
+    - title: Use stored var
+      get: /get?b={{received}}
+      expect:
+          - body: json
+            property: json.args.b
+            is: "{{test_value}}"
+
+    - title: Post json body from complex variable value
+      post: /post
+      json: "{{big_json_body}}"
+      expect:
+        - body: json
+          property: json.json
+          is: "{{big_json_body}}"
+
