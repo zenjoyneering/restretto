@@ -3,6 +3,8 @@ title: Variables usage and binding
 vars:
     server: httpbin.org
     number: 1234.5
+    a: 15
+    b: 20
     content_type: appliction/json
     extra_header: Extra header
     test_value: foobarbaz
@@ -46,6 +48,18 @@ resources:
           - body: json
             property: json.args.z
             is: "{{number}}"
+
+    - title: Explicit casting to string
+      post: /post
+      json:
+        a: "{{a}}"
+        b: "{{b}}"
+        ab: "'{{a}}.{{b}}'"
+      expect:
+        - body: json
+          property: json.json.ab
+          is: "15.20"
+
 
     - title: Post json body from complex variable value using yaml refs
       post: /post
