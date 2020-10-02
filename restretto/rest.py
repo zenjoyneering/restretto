@@ -4,6 +4,7 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 
+import time
 import requests
 from urllib.request import urljoin
 
@@ -139,6 +140,23 @@ class Resource(object):
         return self
 
 
+class Wait(object):
+
+    def __init__(self, spec):
+        self.spec = spec
+        self.vars = {}
+        self.delay = int(spec.get("wait", 0))
+
+    @property
+    def title(self):
+        return self.spec.get('title') or self.spec.get('name') \
+            or 'Waiting for {} second(s)'.format(self.delay)
+
+    def test(self, *args, **kwargs):
+        time.sleep(self.delay)
+        return self
+
+
 class Session(object):
     """REST session"""
 
@@ -163,7 +181,10 @@ class Session(object):
         """Get resources from loaded session spec"""
         entries = self.spec.get('resources') or []
         for item in entries:
-            self.resources.append(Resource(item))
+            if "wait" in item:
+                self.resources.append(Wait(item))
+            else:
+                self.resources.append(Resource(item))
 
     def __bool__(self):
         return bool(self.resources)
