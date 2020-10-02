@@ -28,10 +28,11 @@ def load(path):
     files = []
     if os.path.isdir(path):
         # load only files with supported extension skipping hiddens like '.yml'
-        for entry in os.listdir(path):
-            (name, ext) = os.path.splitext(entry)
-            if name and ext in SUPPORTED_EXTENSIONS:
-                files.append(os.path.join(path, entry))
+        for (curdir, subdirs, entries) in os.walk(path, followlinks=True):
+            for entry in entries:
+                (name, ext) = os.path.splitext(entry)
+                if name and ext in SUPPORTED_EXTENSIONS:
+                    files.append(os.path.join(curdir, entry))
     else:
         files.append(path)
     for entry in files:

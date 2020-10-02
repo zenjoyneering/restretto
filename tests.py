@@ -315,7 +315,7 @@ class LoaderFileLoadTestCase(unittest.TestCase):
             restretto.load("test-data/broken/bad.yml")
 
     def test_load_valid_file(self):
-        data = restretto.load("test-data/simple.yml")
+        data = restretto.load("test-data/valid/simple.yml")
         self.assertEqual(len(data), 1)
 
     def test_empty_resources(self):
@@ -330,7 +330,7 @@ class LoaderFileLoadTestCase(unittest.TestCase):
 class LoaderDirLoadTestCase(unittest.TestCase):
 
     def test_load_from_dir(self):
-        data = restretto.load("test-data/")
+        data = restretto.load("test-data/valid")
         self.assertEqual(len(data), 3)
 
     def test_load_from_unexistant_dir(self):
