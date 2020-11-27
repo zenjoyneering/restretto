@@ -84,4 +84,3 @@ def main(args=sys.argv[1:]):
     print(totals)
     print("")
     return 1 if (failed or errors) else 0
-

@@ -34,8 +34,13 @@ resources:
           Content-Type: text/plain
       data: "Hello, httpbin"
 
+    - wait: 3
+
     - title: This should work
       url: /status/201
+
+    - title: Here we're waiting for 1 second
+      wait: 1
 
     - title: This should fail
       get: /status/404
