@@ -6,7 +6,7 @@ headers:
 
 resources:
 
-    - title: Upload single file
+    - title: Upload  files by named vars
       post: /post
       files:
         sample_1: examples/sample_vars_1.yml
@@ -28,7 +28,7 @@ resources:
         - body: json
           contains: files
 
-    - title: Upload list of files eith custom filed name
+    - title: Upload list of files with custom field name
       post: /post
       files:
         items:
@@ -38,4 +38,22 @@ resources:
       expect:
         - body: json
           contains: files
+        - body: json
+          property: json.files.single
 
+    - title: Upload file with form data
+      post: /post
+      files:
+        - examples/sample_vars_1.yml
+      data:
+        var1: value
+        var2: value 2
+      expect:
+        - body: json
+          contains: files
+        - body: json
+          property: json.form.var1
+          is: value
+        - body: json
+          property: json.form.var2
+          is: value 2
