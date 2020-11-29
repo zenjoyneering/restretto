@@ -70,6 +70,9 @@ class Resource(object):
             raise ParseError("Only expect or assert keyword can be used")
         self.asserts = self.spec.get('assert', self.spec.get('expect'))
 
+        # set download path for response, if required
+        self.download = self.spec.get('download', None)
+
         self.request = self.parse_from_dict(self.spec)
         # response and errors are not known
         self.response = None
@@ -89,6 +92,7 @@ class Resource(object):
         # load files, if provided
         # TODO: add mimetype detection
         # TODO: files should be searched relative to current yml
+        # see https://github.com/wirewit/restretto/issues/16 for details
         file_data = self.request.pop('files', {})
         if type(file_data) is list:
             # parsing files: [file1, file2] structure, assuming name as "files"
@@ -137,6 +141,14 @@ class Resource(object):
                 pass
             for name, path in self.vars.items():
                 self.vars[name] = json_path(path, data)
+
+        # save response body as downloaded file
+        # path taken relative to cwd, may be should be changed to yml-related path
+        # see https://github.com/wirewit/restretto/issues/16 for details
+        if self.download:
+            with open(self.download, "wb") as download:
+                download.write(self.response.content)
+
         return self
 
 
