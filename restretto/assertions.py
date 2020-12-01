@@ -105,7 +105,6 @@ class BodyTest(ResponsePropertyTest):
         elif self.name == 'json' and self.prop:
             # get required property value
             data = json_path(self.prop, {'json': response.json()})
-        self.expect(data, "Content not found or empty: {}".format(self.name))
         self.assert_statements(self.statements, data)
 
 

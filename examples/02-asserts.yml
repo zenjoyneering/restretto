@@ -117,6 +117,31 @@ resources:
            property: json.args.tst
            contains: test
 
+    - title: Test for empty values
+      post: /post
+      # content-type header will be set automatically if not provided
+      json: {"key": "", "zero": 0, "list": [], "obj": {}, "bool": false}
+      expect:
+          - body: json
+            property: json.json.key
+            is: ""
+
+          - body: json
+            property: json.json.zero
+            is: 0
+
+          - body: json
+            property: json.json.list
+            is: []
+
+          - body: json
+            property: json.json.obj
+            is: {}
+
+          - body: json
+            property: json.json.bool
+            is: false
+
     - title: Property not found (should fail)
       get: /get
       expect:

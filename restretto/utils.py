@@ -34,5 +34,5 @@ def json_path(path, data):
     src = data
     for p in fragments:
         src = src[int(p)] if (isinstance(src, list) and p.isdigit()) \
-            else src.get(p, {})
+            else src[p]
     return src
