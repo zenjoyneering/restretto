@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="restretto",
-    version="1.0.4",
+    version="1.0.5",
     description="restretto is REST API testing tool",
     long_description="YML-scenario based REST API testing tool",
     author="Arthur Orlov",
