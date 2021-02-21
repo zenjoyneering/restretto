@@ -61,7 +61,7 @@ def main(args=sys.argv[1:]):
                 if arguments.print_passed:
                     # TODO: print response status instead
                     print("{} {}: Ok".format(colored.green("[PASS]"), resource.title))
-                if arguments.print_response:
+                if arguments.print_response and resource.response:
                     print(resource.response.text)
                 passed += 1
             except ExpectError as failure:

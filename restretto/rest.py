@@ -164,6 +164,10 @@ class Wait(object):
         return self.spec.get('title') or self.spec.get('name') \
             or 'Waiting for {} second(s)'.format(self.delay)
 
+    @property
+    def response(self):
+        return None
+
     def test(self, *args, **kwargs):
         time.sleep(self.delay)
         return self
